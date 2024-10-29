@@ -18,9 +18,6 @@ public class NftItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "nft_item", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> pictures;
-
     private String name;
 
     @ManyToOne(cascade = CascadeType.ALL, optional = false)
@@ -37,6 +34,9 @@ public class NftItem {
 
     private Double currentBid;
 
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "nft_item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> pictures;
+
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
 }

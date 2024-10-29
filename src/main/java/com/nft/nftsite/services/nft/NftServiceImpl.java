@@ -7,12 +7,15 @@ import com.nft.nftsite.data.dtos.requests.NftFilterDto;
 import com.nft.nftsite.data.dtos.responses.CategoryResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.data.models.Category;
+import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.NftItem;
 import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.repository.CategoryRepository;
 import com.nft.nftsite.data.repository.NftItemRepository;
 import com.nft.nftsite.exceptions.CategoryNameAlreadyExistsException;
 import com.nft.nftsite.exceptions.CategoryNotFoundException;
+import com.nft.nftsite.exceptions.NFTSiteException;
+import com.nft.nftsite.services.cloudinaryImage.ImageService;
 import com.nft.nftsite.services.users.UserService;
 import com.nft.nftsite.utils.PageDto;
 import com.nft.nftsite.utils.RandomStringGenerator;
@@ -22,9 +25,12 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Type;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +41,34 @@ public class NftServiceImpl implements NftService {
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
     private final UserService userService;
-
+    private final ImageService imageService;
 
     @Override
     public NftResponse createNewNft(CreateNftRequest nftRequest) {
+        Category foundCategory;
+        try {
+            foundCategory = findCategoryById(nftRequest.getCategoryId());
+        } catch (CategoryNotFoundException categoryNotFoundException) {
+            throw new NFTSiteException("Category does not exist", HttpStatus.BAD_REQUEST);
+        }
+        nftRequest.setName(nftRequest.getName().trim());
+        if (nftRepository.existsByNameEqualsIgnoreCase(nftRequest.getName())) {
+            throw new NFTSiteException("NFT with this name already exists", HttpStatus.BAD_REQUEST);
+        }
         User currentUser = userService.getAuthenticatedUser(true);
-        return null;
+        List<Image> pictures = imageService.uploadNewImage(nftRequest.getImages().toArray(new MultipartFile[0]));
+        NftItem nftItem = NftItem.builder()
+                .name(nftRequest.getName())
+                .description(nftRequest.getDescription())
+                .startingPrice(nftRequest.getStartingPrice())
+                .currentBid(0.00)
+                .slug(generateSlug())
+                .category(foundCategory)
+                .owner(currentUser)
+                .pictures(pictures)
+                .build();
+        nftItem = nftRepository.save(nftItem);
+        return modelMapper.map(nftItem, NftResponse.class);
     }
 
     @Override

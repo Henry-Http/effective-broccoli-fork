@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +24,9 @@ public class NftController {
 
     private final NftService nftService;
 
-    @PostMapping("/new")
+    @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new NFT")
-    public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody CreateNftRequest nftRequest) {
+    public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody @ModelAttribute CreateNftRequest nftRequest) {
         return new ResponseEntity<>(nftService.createNewNft(nftRequest), HttpStatus.OK);
     }
 

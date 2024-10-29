@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -30,5 +32,8 @@ public class CreateNftRequest {
     @NotNull(message = "Starting price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Starting price must be greater than 0")
     private Double startingPrice;
+
+    @NotEmpty(message = "At least one image is required")
+    private List<MultipartFile> images;
 
 }
