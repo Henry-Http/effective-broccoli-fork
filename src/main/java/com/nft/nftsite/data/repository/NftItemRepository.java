@@ -17,14 +17,11 @@ public interface NftItemRepository extends JpaRepository<NftItem, Long> {
     Page<NftItem> findAllByOwner(User user, Pageable pageable);
 
     @Query("SELECT n FROM NftItem n " +
-            "WHERE (:search IS NULL OR LOWER(n.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "WHERE (CAST(:search AS text) IS NULL OR LOWER(n.name) LIKE :search) " +
             "AND (:categoryId IS NULL OR n.category.id = :categoryId)")
     Page<NftItem> findAllNftsWithFilters(
             @Param("search") String search,
             @Param("categoryId") Long categoryId,
-            @Param("minPrice") Double minPrice,
-            @Param("maxPrice") Double maxPrice,
-            @Param("currentBid") Double currentBid,
             Pageable pageable);
 
     /**

@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/category")
 @AllArgsConstructor
@@ -19,13 +21,17 @@ public class CategoryController {
 
     private final NftService nftService;
 
-
     @PostMapping("/new")
     @Operation(summary = "Create new category")
     public ResponseEntity<CategoryResponse> createNewCategory(@Valid @RequestBody CreateCategoryRequest categoryRequest) {
         return new ResponseEntity<>(nftService.createNewCategory(categoryRequest), HttpStatus.OK);
     }
 
+    @GetMapping("/find")
+    @Operation(summary = "Find all categories")
+    public ResponseEntity<List<CategoryResponse>> findAllCategories() {
+        return new ResponseEntity<>(nftService.findAllCategories(), HttpStatus.OK);
+    }
 
     @DeleteMapping("/delete-by-name/{categoryName}")
     @Operation(summary = "Delete an existing category by name")

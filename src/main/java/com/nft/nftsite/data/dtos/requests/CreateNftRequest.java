@@ -21,8 +21,6 @@ public class CreateNftRequest {
 
     @NotNull(message = "Description is required")
     @NotBlank(message = "Description is required")
-    @Min(value = 5, message = "Description must be at least 5 characters long")
-    @Max(value = 200, message = "Description must be at most 200 characters long")
     private String description;
 
     @NotNull(message = "Please select category")

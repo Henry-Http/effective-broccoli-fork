@@ -34,7 +34,7 @@ public class NftItem {
 
     private Double currentBid;
 
-    @OneToMany(mappedBy = "nft_item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> pictures;
 
     private final LocalDateTime createdAt = LocalDateTime.now();

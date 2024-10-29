@@ -4,8 +4,10 @@ package com.nft.nftsite.data.dtos.responses;
 import com.nft.nftsite.data.models.Category;
 import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class NftResponse {
 
     private Long id;

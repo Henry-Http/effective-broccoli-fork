@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Type;
@@ -44,6 +45,7 @@ public class NftServiceImpl implements NftService {
     private final ImageService imageService;
 
     @Override
+    @Transactional
     public NftResponse createNewNft(CreateNftRequest nftRequest) {
         Category foundCategory;
         try {
@@ -56,6 +58,7 @@ public class NftServiceImpl implements NftService {
             throw new NFTSiteException("NFT with this name already exists", HttpStatus.BAD_REQUEST);
         }
         User currentUser = userService.getAuthenticatedUser(true);
+        User dbUser = userService.getUserById(currentUser.getId());
         List<Image> pictures = imageService.uploadNewImage(nftRequest.getImages().toArray(new MultipartFile[0]));
         NftItem nftItem = NftItem.builder()
                 .name(nftRequest.getName())
@@ -64,7 +67,7 @@ public class NftServiceImpl implements NftService {
                 .currentBid(0.00)
                 .slug(generateSlug())
                 .category(foundCategory)
-                .owner(currentUser)
+                .owner(dbUser)
                 .pictures(pictures)
                 .build();
         nftItem = nftRepository.save(nftItem);
@@ -73,12 +76,13 @@ public class NftServiceImpl implements NftService {
 
     @Override
     public PageDto<NftResponse> getAllNfts(Pageable pageable, NftFilterDto filterDto) {
+        String search = ("%" + (filterDto.getSearch() == null ? "" : filterDto.getSearch().trim()) + "%").toLowerCase();
         Page<NftItem> nftPage = nftRepository.findAllNftsWithFilters(
-                filterDto.getSearch(),
+                search,
                 filterDto.getCategoryId(),
-                filterDto.getMinPrice(),
-                filterDto.getMaxPrice(),
-                filterDto.getCurrentBid(),
+//                filterDto.getMinPrice(),
+//                filterDto.getMaxPrice(),
+//                filterDto.getCurrentBid(),
                 pageable
         );
         Type pageDtoType = new TypeToken<PageDto<NftResponse>>() {
@@ -87,6 +91,7 @@ public class NftServiceImpl implements NftService {
     }
 
     @Override
+    @Transactional
     public CategoryResponse createNewCategory(CreateCategoryRequest categoryRequest) {
         categoryRequest.setCategoryName(categoryRequest.getCategoryName().trim());
         if (categoryRepository.existsByNameEqualsIgnoreCase(categoryRequest.getCategoryName())) {
@@ -115,6 +120,17 @@ public class NftServiceImpl implements NftService {
     public void deleteCategoryById(Long categoryId) {
         Category category = findCategoryById(categoryId);
         categoryRepository.delete(category);
+    }
+
+    @Override
+    public List<CategoryResponse> findAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        if (!categories.isEmpty()) {
+            Type listType = new TypeToken<List<CategoryResponse>>() {
+            }.getType();
+            return modelMapper.map(categories, listType);
+        }
+        return List.of();
     }
 
     @Override

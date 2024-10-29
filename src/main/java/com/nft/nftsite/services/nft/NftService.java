@@ -10,6 +10,8 @@ import com.nft.nftsite.utils.PageDto;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface NftService {
 
     // NFTS
@@ -27,4 +29,5 @@ public interface NftService {
 
     void deleteCategoryById(Long categoryId);
 
+    List<CategoryResponse> findAllCategories();
 }
