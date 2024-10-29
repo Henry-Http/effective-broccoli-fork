@@ -3,10 +3,7 @@ package com.nft.nftsite.data.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nft.nftsite.data.models.enumerations.ThirdPartySignInType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
 import java.time.LocalDateTime;
@@ -16,7 +13,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Table(name = "users")
 public class User {
 

@@ -3,17 +3,16 @@ package com.nft.nftsite.data.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nft.nftsite.data.models.enumerations.UploadUserType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 @Table(name = "images")
 public class Image {
 

@@ -1,22 +1,28 @@
 package com.nft.nftsite.data.models;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@Table(name = "roles")
-public class Role {
+@Table(name = "category")
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String name;
+
+    private String description;
+
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
 }
