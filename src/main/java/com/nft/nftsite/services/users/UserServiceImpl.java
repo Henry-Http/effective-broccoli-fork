@@ -31,6 +31,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.nft.nftsite.data.dtos.requests.*;
 import com.nft.nftsite.data.dtos.responses.*;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +54,7 @@ public class UserServiceImpl implements UserService {
     private UserRoleService userRoleService;
 
     @Override
+    @Transactional
     public TokenResponseDto signUp(SignupRequestDto requestDto) {
         if (userRepository.existsByUsername(requestDto.getUsername())) {
             throw new UsernameAlreadyUsedException();
