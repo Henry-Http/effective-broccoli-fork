@@ -30,7 +30,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final EmailService emailService;
     private final SpringTemplateEngine templateEngine;
     private final ImageService imageService;
-    private final ModelMapper mapper;
     private final ModelMapper modelMapper;
 
     @Override
@@ -41,7 +40,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (userDetails == null) {
             return UserDetailsDto.builder().build();
         } else {
-            UserDetailsDto userDetailsDto = mapper.map(userDetails, UserDetailsDto.class);
+            UserDetailsDto userDetailsDto = modelMapper.map(userDetails, UserDetailsDto.class);
             userDetailsDto.setThirdPartySignIn(authUser.isThirdPartySignIn());
             userDetailsDto.setThirdPartySignInType(authUser.getThirdPartySignInType());
             return userDetailsDto;
@@ -78,7 +77,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (!StringUtils.hasText(initialFirstName)) {
             sendWelcomeEmail(savedUserDetails);
         }
-        return mapper.map(savedUserDetails, UserDetailsDto.class);
+        return modelMapper.map(savedUserDetails, UserDetailsDto.class);
     }
 
     @Override
@@ -100,7 +99,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         String htmlContent = templateEngine.process("welcome", context);
         log.info("Email content ready for sending to {}", userDetails.getEmailAddress());
-        emailService.sendEmail(userDetails.getEmailAddress(), "Welcome to UPreviews", htmlContent);
+        emailService.sendEmail(userDetails.getEmailAddress(), "Welcome to NFTSite", htmlContent);
     }
 
 }

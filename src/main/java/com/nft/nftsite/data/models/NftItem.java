@@ -2,7 +2,7 @@ package com.nft.nftsite.data.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,5 +28,15 @@ public class NftItem {
 
     @ManyToOne(cascade = CascadeType.ALL, optional = false)
     private Category category;
+
+    private String description;
+
+    private String slug;
+
+    private Double startingPrice;
+
+    private Double currentBid;
+
+    private LocalDateTime createdAt;
 
 }

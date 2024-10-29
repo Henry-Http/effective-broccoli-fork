@@ -1,18 +1,19 @@
 package com.nft.nftsite.controllers;
 
 import com.nft.nftsite.data.dtos.requests.CreateNftRequest;
+import com.nft.nftsite.data.dtos.requests.NftFilterDto;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.services.nft.NftService;
+import com.nft.nftsite.utils.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/nft")
@@ -26,6 +27,19 @@ public class NftController {
     @Operation(summary = "Create new NFT")
     public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody CreateNftRequest nftRequest) {
         return new ResponseEntity<>(nftService.createNewNft(nftRequest), HttpStatus.OK);
+    }
+
+    @GetMapping("/find")
+    @Operation(summary = "Get all NFTs", description = "Get all NFTs in the system with optional filters")
+    public ResponseEntity<PageDto<NftResponse>> getAllNfts(
+            @ParameterObject Pageable pageable,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double currentBid) {
+        NftFilterDto filterDto = new NftFilterDto(search, categoryId, minPrice, maxPrice, currentBid);
+        return ResponseEntity.ok(nftService.getAllNfts(pageable, filterDto));
     }
 
 }
