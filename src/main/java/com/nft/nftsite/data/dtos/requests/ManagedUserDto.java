@@ -31,8 +31,10 @@ public class ManagedUserDto {
     private ThirdPartySignInType thirdPartySignInType;
 
     public ManagedUserDto(SignupRequestDto requestDto) {
-        this.username = requestDto.getUsername();
-        this.email = requestDto.getUsername();
+        String signUpEmail = requestDto.getUsername();
+        this.username = signUpEmail;
+        this.email = signUpEmail;
+        this.firstName = signUpEmail.substring(0, signUpEmail.indexOf("@"));
         this.password = requestDto.getPassword();
     }
 
