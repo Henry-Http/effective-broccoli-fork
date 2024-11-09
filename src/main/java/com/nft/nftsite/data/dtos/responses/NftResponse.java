@@ -8,10 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Builder
@@ -37,7 +34,7 @@ public class NftResponse {
 
     private LocalDateTime createdAt;
 
-    private List<ImageDto> pictures;
+    private ImageDto picture;
 
     public void setOwner(User owner) {
         if (owner == null) {
@@ -65,12 +62,8 @@ public class NftResponse {
                 .build();
     }
 
-    public void setPictures(List<Image> pictures) {
-        this.pictures = (pictures == null)
-                ? new ArrayList<>()
-                : pictures.stream()
-                    .map(ImageDto::fromImage)
-                    .toList();
+    public void setPicture(Image picture) {
+        this.picture = ImageDto.fromImage(picture);
     }
 
 

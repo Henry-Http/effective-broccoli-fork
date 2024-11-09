@@ -28,8 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -59,7 +57,7 @@ public class NftServiceImpl implements NftService {
         }
         User currentUser = userService.getAuthenticatedUser(true);
         User dbUser = userService.getUserById(currentUser.getId());
-        List<Image> pictures = imageService.uploadNewImage(nftRequest.getImages().toArray(new MultipartFile[0]));
+        Image picture = imageService.uploadNewImage(nftRequest.getImage());
         NftItem nftItem = NftItem.builder()
                 .name(nftRequest.getName())
                 .description(nftRequest.getDescription())
@@ -68,7 +66,7 @@ public class NftServiceImpl implements NftService {
                 .slug(generateSlug())
                 .category(foundCategory)
                 .owner(dbUser)
-                .pictures(pictures)
+                .picture(picture)
                 .build();
         nftItem = nftRepository.save(nftItem);
         return modelMapper.map(nftItem, NftResponse.class);

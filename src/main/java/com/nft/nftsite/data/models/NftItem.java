@@ -3,7 +3,6 @@ package com.nft.nftsite.data.models;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Builder
@@ -34,8 +33,8 @@ public class NftItem {
 
     private Double currentBid;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> pictures;
+    @OneToOne(optional = false)
+    private Image picture;
 
     private final LocalDateTime createdAt = LocalDateTime.now();
 
