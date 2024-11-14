@@ -89,6 +89,12 @@ public class NftServiceImpl implements NftService {
     }
 
     @Override
+    public NftResponse findById(Long nftId) {
+        NftItem item = nftRepository.findById(nftId).orElseThrow(() -> new NFTSiteException("NFT not found", HttpStatus.NOT_FOUND));
+        return modelMapper.map(item, NftResponse.class);
+    }
+
+    @Override
     @Transactional
     public CategoryResponse createNewCategory(CreateCategoryRequest categoryRequest) {
         categoryRequest.setCategoryName(categoryRequest.getCategoryName().trim());
@@ -108,27 +114,44 @@ public class NftServiceImpl implements NftService {
     }
 
     @Override
-    public void deleteCategoryByName(String categoryName) {
-        categoryName = categoryName.trim();
-        Category category = categoryRepository.findByNameEqualsIgnoreCase(categoryName).orElseThrow(CategoryNotFoundException::new);
-        categoryRepository.delete(category);
-    }
-
-    @Override
     public void deleteCategoryById(Long categoryId) {
         Category category = findCategoryById(categoryId);
-        categoryRepository.delete(category);
+        category.setIsVisible(false);
+        categoryRepository.save(category);
     }
 
     @Override
     public List<CategoryResponse> findAllCategories() {
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAllByIsVisible(true);
         if (!categories.isEmpty()) {
             Type listType = new TypeToken<List<CategoryResponse>>() {
             }.getType();
             return modelMapper.map(categories, listType);
         }
         return List.of();
+    }
+
+    @Override
+    public List<CategoryResponse> findAllCategoryForAdmin() {
+        List<Category> categories = categoryRepository.findAll();
+
+        if (!categories.isEmpty()) {
+            Type listType = new TypeToken<List<CategoryResponse>>() {
+            }.getType();
+            List<CategoryResponse> responses = modelMapper.map(categories, listType);
+            for (CategoryResponse categoryResponse: responses) {
+                categoryResponse.setNftCount(nftRepository.countAllByCategory_Id(categoryResponse.getId()));
+            }
+            return responses;
+        }
+        return List.of();
+    }
+
+    @Override
+    public void restoreCategoryById(Long categoryId) {
+        Category category = findCategoryById(categoryId);
+        category.setIsVisible(true);
+        categoryRepository.save(category);
     }
 
     @Override

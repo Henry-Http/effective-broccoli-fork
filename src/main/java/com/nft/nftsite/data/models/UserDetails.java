@@ -4,6 +4,8 @@ import com.nft.nftsite.data.models.enumerations.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -32,5 +34,7 @@ public class UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    private LocalDateTime createdAt;
 
 }

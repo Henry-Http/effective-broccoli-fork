@@ -6,7 +6,7 @@ import com.nft.nftsite.data.dtos.requests.*;
 import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.utils.PageDto;
 import org.springframework.data.domain.Pageable;
-
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -39,6 +39,8 @@ public interface UserService {
 
     PageDto<UserDto> getAllUsers(Pageable pageable);
 
+    List<UserDto> getAllUsers();
+
     PageDto<UserDto> getAllUsers(UserSpecificationFields fields, Pageable pageable);
 
     UserDto getUser(Long id);
@@ -51,4 +53,9 @@ public interface UserService {
 
     boolean isControlCenterUser();
 
+    AdminInvitationDto inviteAdmin(AdminInvitationDto requestDto);
+
+    AdminTokenResponseDto loginAdmin(LoginRequestDto requestDto);
+
+    List<UserDto> getAllAdmins();
 }

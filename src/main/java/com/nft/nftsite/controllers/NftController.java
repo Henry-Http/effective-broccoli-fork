@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,6 +27,7 @@ public class NftController {
 
     @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new NFT")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody @ModelAttribute CreateNftRequest nftRequest) {
         return new ResponseEntity<>(nftService.createNewNft(nftRequest), HttpStatus.OK);
     }

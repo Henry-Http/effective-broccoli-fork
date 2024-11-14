@@ -34,7 +34,7 @@ public class ManagedUserDto {
         String signUpEmail = requestDto.getUsername();
         this.username = signUpEmail;
         this.email = signUpEmail;
-        this.firstName = signUpEmail.substring(0, signUpEmail.indexOf("@"));
+        this.firstName = Character.toUpperCase(signUpEmail.charAt(0)) + signUpEmail.substring(1, signUpEmail.indexOf("@")).toLowerCase();
         this.password = requestDto.getPassword();
     }
 

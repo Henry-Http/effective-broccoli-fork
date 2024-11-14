@@ -1,22 +1,18 @@
 package com.nft.nftsite.services.users;
 
-import com.nft.nftsite.data.models.EmailConfirm;
-import com.nft.nftsite.data.models.Role;
-import com.nft.nftsite.data.models.User;
-import com.nft.nftsite.data.models.UserDetails;
+import com.nft.nftsite.data.models.*;
 import com.nft.nftsite.data.models.enumerations.EmailConfirmType;
+import com.nft.nftsite.data.models.enumerations.InvitationStatus;
+import com.nft.nftsite.data.repository.AdminInvitationRepository;
 import com.nft.nftsite.data.repository.UserRepository;
-import com.nft.nftsite.exceptions.InvalidLoginDetailsException;
-import com.nft.nftsite.exceptions.UnauthorizedRequestException;
-import com.nft.nftsite.exceptions.UserNotFoundException;
-import com.nft.nftsite.exceptions.UsernameAlreadyUsedException;
+import com.nft.nftsite.exceptions.*;
 import com.nft.nftsite.security.AuthenticatedUser;
 import com.nft.nftsite.security.JwtGenerator;
 import com.nft.nftsite.services.users.factories.ThirdPartyAuthFactory;
 import com.nft.nftsite.services.users.factories.ThirdPartyAuthService;
 import com.nft.nftsite.utils.PageDto;
 import com.nft.nftsite.utils.RandomStringGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -35,23 +31,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final ThirdPartyAuthFactory thirdPartyAuthFactory;
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private EmailConfirmService emailConfirmService;
-    private JwtGenerator jwtGenerator;
-    private AuthenticationManager authenticationManager;
-    private ModelMapper mapper;
-    private UserRoleService userRoleService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailConfirmService emailConfirmService;
+    private final JwtGenerator jwtGenerator;
+    private  final AuthenticationManager authenticationManager;
+    private final ModelMapper mapper;
+    private final UserRoleService userRoleService;
+    private final AdminInvitationRepository adminInvitationRepository;
+    private final RoleService roleService;
 
     @Override
     @Transactional
@@ -74,6 +71,7 @@ public class UserServiceImpl implements UserService {
                 .tag(RandomStringGenerator.generateRandomString(10))
                 .firstName(managedUserDto.getFirstName())
                 .lastName(managedUserDto.getLastName())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         User user = User.builder()
@@ -248,6 +246,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDto> getAllUsers() {
+        List<Role> roles = roleService.findAllRolesInList(List.of("ROLE_CUSTOMER", "ROLE_USER"));
+        List<User> allUsers = userRepository.findAllByRolesContaining(roles.get(0));
+        List<User> allUsers2 = userRepository.findAllByRolesContaining(roles.get(1));
+        Set<User> users = new HashSet<>();
+        users.addAll(allUsers);
+        users.addAll(allUsers2);
+        Type pageDtoTypeToken = new TypeToken<List<UserDto>>() {
+        }.getType();
+        return mapper.map(users.stream().toList(), pageDtoTypeToken);
+    }
+
+    @Override
     public PageDto<UserDto> getAllUsers(UserSpecificationFields fields, Pageable pageable) {
         Specification<User> spec = Specification.where(null);
 
@@ -325,6 +336,98 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isControlCenterUser() {
         return hasRole("ROLE_CONTROL_CENTER");
+    }
+
+    @Override
+    public AdminInvitationDto inviteAdmin(AdminInvitationDto requestDto) {
+        Optional<User> existingUser = this.getUserByUsername(requestDto.getEmail());
+
+        if (existingUser.isPresent()) throw new UsernameAlreadyUsedException();
+
+        UserDetails userDetails = UserDetails.builder()
+                .firstName(requestDto.getFirstName())
+                .lastName(requestDto.getLastName())
+                .emailAddress(requestDto.getEmail())
+                .createdAt(LocalDateTime.now())
+                .tag(RandomStringGenerator.generateRandomString(20))
+                .build();
+
+        String password = RandomStringGenerator.generateRandomString(16);
+        User user = User.builder()
+                .username(requestDto.getEmail())
+                .password(passwordEncoder.encode(password))
+                .activated(true)
+                .userDetails(userDetails)
+                .build();
+
+        User savedUser = this.save(user);
+        List<String> roles = List.of("ROLE_ADMIN");
+
+        userRoleService.assignRolesToUser(roles, savedUser);
+
+        List<AdminInvitation> allInvites = adminInvitationRepository.findAllByEmail(requestDto.getEmail());
+        for (AdminInvitation invite : allInvites) {
+            if (invite.getStatus() == InvitationStatus.PENDING) {
+                throw new InvitationAlreadySentException();
+            } else if (invite.getStatus() == InvitationStatus.COMPLETED) {
+                throw new InvitationAlreadySentException("User has already setup account");
+            } else {
+                adminInvitationRepository.delete(invite);
+            }
+        }
+
+        String token = RandomStringGenerator.generateRandomString(128);
+        AdminInvitation newInvitation = AdminInvitation.builder()
+                .email(requestDto.getEmail())
+                .roles("ROLE_ADMIN")
+                .status(InvitationStatus.PENDING)
+                .token(token)
+                .invitedBy(this.getAuthenticatedUser())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        adminInvitationRepository.save(newInvitation);
+        savedUser.setPassword(password);
+        emailConfirmService.sendAdminInvite(savedUser, this.getAuthenticatedUser().getUserDetails().getFirstName());
+        savedUser.setPassword("");
+        return mapper.map(newInvitation, AdminInvitationDto.class);
+    }
+
+    @Override
+    public AdminTokenResponseDto loginAdmin(LoginRequestDto request) {
+        try {
+            log.info("AdminLoginRequestDto username is {}", request.getUsername());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(),
+                            request.getPassword())
+            );
+            User foundUser = this.getUserByUsername(request.getUsername()).orElseThrow(() -> new InvalidLoginDetailsException("Invalid details provided"));
+            if (foundUser.getRoles().stream().noneMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
+                throw new InvalidLoginDetailsException("Invalid details provided");
+            }
+            String token = jwtGenerator.generateToken(authentication);
+            return AdminTokenResponseDto.builder()
+                    .fullName(foundUser.getUserDetails().getFirstName() + "  " + foundUser.getUserDetails().getLastName())
+                    .email(foundUser.getUsername())
+                    .role(foundUser.getRoles().stream()
+        .map(Role::getName)
+        .collect(Collectors.joining(", ")))
+                    .token(token).build();
+        } catch (Exception e) {
+            if (Objects.equals(e.getClass().getName(), "org.springframework.security.authentication.LockedException")) {
+//                this.resendOtp(request.getUsername());
+                throw new UnauthorizedRequestException("VERIFICATION_REQUIRED");
+            }
+            throw new InvalidLoginDetailsException();
+        }
+    }
+
+    @Override
+    public List<UserDto> getAllAdmins() {
+        List<Role> roles = roleService.findAllRolesInList(List.of("ROLE_ADMIN"));
+        List<User> allUsers = userRepository.findAllByRolesContaining(roles.get(0));
+        Type pageDtoTypeToken = new TypeToken<List<UserDto>>() {
+        }.getType();
+        return mapper.map(allUsers, pageDtoTypeToken);
     }
 
 }

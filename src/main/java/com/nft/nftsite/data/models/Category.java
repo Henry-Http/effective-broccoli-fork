@@ -23,6 +23,8 @@ public class Category {
 
     private String description;
 
+    private Boolean isVisible;
+
     private final LocalDateTime createdAt = LocalDateTime.now();
 
 }

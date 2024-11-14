@@ -9,9 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/category")
@@ -23,6 +25,7 @@ public class CategoryController {
 
     @PostMapping("/new")
     @Operation(summary = "Create new category")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<CategoryResponse> createNewCategory(@Valid @RequestBody CreateCategoryRequest categoryRequest) {
         return new ResponseEntity<>(nftService.createNewCategory(categoryRequest), HttpStatus.OK);
     }
@@ -33,18 +36,27 @@ public class CategoryController {
         return new ResponseEntity<>(nftService.findAllCategories(), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete-by-name/{categoryName}")
-    @Operation(summary = "Delete an existing category by name")
-    public ResponseEntity<String> deleteCategoryByName(@PathVariable String categoryName) {
-        nftService.deleteCategoryByName(categoryName);
-        return new ResponseEntity<>("Category Deleted Successfully!", HttpStatus.OK);
+    @GetMapping("/admin-find")
+    @Operation(summary = "Admin Find all categories")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<List<CategoryResponse>> findAllCategoriesForAdmin() {
+        return new ResponseEntity<>(nftService.findAllCategoryForAdmin(), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{categoryId}")
     @Operation(summary = "Delete an existing category by id")
-    public ResponseEntity<String> deleteCategoryById(@PathVariable Long categoryId) {
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Map<String, String>> deleteCategoryById(@PathVariable Long categoryId) {
         nftService.deleteCategoryById(categoryId);
-        return new ResponseEntity<>("Category Deleted Successfully!", HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("message", "Category Deleted Successfully!"), HttpStatus.OK);
+    }
+
+    @PostMapping("/restore/{categoryId}")
+    @Operation(summary = "Restore an existing category by id")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Map<String, String>> restoreCategoryById(@PathVariable Long categoryId) {
+        nftService.restoreCategoryById(categoryId);
+        return new ResponseEntity<>(Map.of("message", "Category Restored Successfully!"), HttpStatus.OK);
     }
 
 

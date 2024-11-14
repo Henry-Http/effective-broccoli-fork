@@ -24,6 +24,8 @@ public interface NftItemRepository extends JpaRepository<NftItem, Long> {
             @Param("categoryId") Long categoryId,
             Pageable pageable);
 
+    Long countAllByCategory_Id(Long categoryId);
+
     /**
      * @Query("SELECT n FROM NftItem n " +
      *             "WHERE (:search IS NULL OR LOWER(n.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +

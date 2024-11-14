@@ -17,4 +17,8 @@ public class CategoryResponse {
 
     private String description;
 
+    private Boolean isVisible;
+
+    private Long nftCount;
+
 }

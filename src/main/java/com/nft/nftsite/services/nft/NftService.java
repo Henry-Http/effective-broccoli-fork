@@ -19,15 +19,21 @@ public interface NftService {
 
     PageDto<NftResponse> getAllNfts(Pageable pageable, NftFilterDto filterDto);
 
+    NftResponse findById(Long nftId);
+
 
     // CATEGORY
     CategoryResponse createNewCategory(@Valid CreateCategoryRequest categoryRequest);
 
     Category findCategoryById(Long categoryId);
 
-    void deleteCategoryByName(String categoryName);
+//    void deleteCategoryByName(String categoryName);
 
     void deleteCategoryById(Long categoryId);
 
     List<CategoryResponse> findAllCategories();
+
+    List<CategoryResponse> findAllCategoryForAdmin();
+
+    void restoreCategoryById(Long categoryId);
 }

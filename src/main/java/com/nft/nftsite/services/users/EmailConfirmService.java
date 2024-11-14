@@ -9,6 +9,8 @@ public interface EmailConfirmService {
 
     void sendConfirmation(User user, EmailConfirmType type);
 
+    void sendAdminInvite(User user, String inviterName);
+
     EmailConfirm retrieveByToken(String token);
 
     void revokeToken(String token);

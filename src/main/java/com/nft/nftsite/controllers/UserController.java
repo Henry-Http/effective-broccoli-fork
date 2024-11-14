@@ -8,10 +8,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.nft.nftsite.data.dtos.requests.*;
 import com.nft.nftsite.data.dtos.responses.*;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -21,6 +26,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserDetailsService userDetailsService;
+
 
     @PostMapping("/signup")
     @Operation(summary = "Create new account")
@@ -91,6 +97,26 @@ public class UserController {
     public ResponseEntity<String> resendOtp(@PathVariable String email) {
         userService.resendOtp(email);
         return ResponseEntity.ok("Resent successfully");
+    }
+
+    @PostMapping("/admin/invite")
+    @Operation(summary = "Invite new admin user")
+//    @Secured("ROLE_ADMIN")
+    public ResponseEntity<AdminInvitationDto> inviteNewUser(@RequestBody @Valid AdminInvitationDto requestDto) {
+        return new ResponseEntity<>(userService.inviteAdmin(requestDto), HttpStatus.OK);
+    }
+
+    @PostMapping("/admin/login")
+    @Operation(summary = "Login")
+    public ResponseEntity<AdminTokenResponseDto> loginAdmin(@Valid @RequestBody LoginRequestDto requestDto) {
+        return new ResponseEntity<>(userService.loginAdmin(requestDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/admin/all")
+    @Operation(summary = "Get all admins")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<List<UserDto>> getAllAdmins() {
+        return ResponseEntity.ok(userService.getAllAdmins());
     }
 
 }

@@ -1,6 +1,7 @@
 package com.nft.nftsite.data.repository;
 
 import com.nft.nftsite.data.dtos.responses.UsersOverviewDto;
+import com.nft.nftsite.data.models.Role;
 import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.models.enumerations.ThirdPartySignInType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -27,5 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             )
             """)
     UsersOverviewDto getOverview();
+
+    List<User> findAllByRolesContaining(Role role);
 
 }

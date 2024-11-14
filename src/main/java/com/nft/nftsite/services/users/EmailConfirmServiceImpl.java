@@ -36,6 +36,19 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     }
 
     @Override
+    public void sendAdminInvite(User user, String inviterName) {
+        Context context = new Context();
+        context.setVariable("email", user.getUsername());
+        context.setVariable("inviterName", inviterName);
+        context.setVariable("firstName", user.getUserDetails().getFirstName());
+        context.setVariable("password", user.getPassword());
+
+        String htmlContent = templateEngine.process("admin-invite", context);
+        log.info("Email content ready for sending -INVITE- to {}", user.getUsername());
+        emailService.sendEmail(user.getUsername(), "Invite Admin", htmlContent);
+    }
+
+    @Override
     public EmailConfirm retrieveByToken(String token) {
         return emailConfirmRepository.findByToken(token)
                 .orElseThrow(UnauthorizedRequestException::new);
@@ -53,7 +66,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         List<EmailConfirm> pendingTokens = emailConfirmRepository
                 .findAllByUserAndExpiredAndCreatedAtIsAfter(user, Boolean.FALSE, LocalDateTime.now().minusHours(2));
 
-        if (pendingTokens.size() > 0) {
+        if (!pendingTokens.isEmpty()) {
             EmailConfirm token = pendingTokens.get(0);
             handleConfirmationSend(token);
         } else {
@@ -75,6 +88,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         String token = switch (type) {
             case ACTIVATION -> RandomStringGenerator.generateRandomString(6, true);
             case PASSWORD_RESET -> RandomStringGenerator.generateRandomString(128);
+            case ADMIN_INVITATION -> "";
         };
 
         log.info("Token generated for email confirmation :: {} || Type :: {}", user.getUsername(), type);
