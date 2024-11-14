@@ -25,6 +25,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,8 +134,7 @@ public class NftServiceImpl implements NftService {
 
     @Override
     public List<CategoryResponse> findAllCategoryForAdmin() {
-        List<Category> categories = categoryRepository.findAll();
-
+        List<Category> categories = categoryRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         if (!categories.isEmpty()) {
             Type listType = new TypeToken<List<CategoryResponse>>() {
             }.getType();
