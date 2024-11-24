@@ -83,7 +83,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         return PaymentCardDto.builder()
                 .approvedPayments(approvedTotal)
                 .pendingPayments(pendingTotal)
-                .totalAmountPaid(approvedTotal + pendingTotal)
+                .totalTransactions(transactionRepository.findAll().size())
                 .build();
     }
 
@@ -112,17 +112,20 @@ public class PaymentServiceImpl implements InternalPaymentService{
         transactionRepository.save(transaction);
         payment.setStatus(InternalPaymentStatus.APPROVED);
         payment = paymentRepository.save(payment);
-        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount().toString(), PaymentType.REQUEST);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.APPROVAL, null);
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 
     @Override
     public DepositResponse declinePayment(Long paymentId) {
         InternalPayments payment = paymentRepository.findById(paymentId).orElseThrow(() -> new NFTSiteException("Payment not found", HttpStatus.NOT_FOUND));
+        if (payment.getStatus() == InternalPaymentStatus.APPROVED) {
+            throw new NFTSiteException("Payment has already been approved", HttpStatus.BAD_REQUEST);
+        }
         payment.setStatus(InternalPaymentStatus.DECLINED);
         payment = paymentRepository.save(payment);
         User user = userService.getUserById(payment.getUser().getId());
-        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount().toString(), PaymentType.REQUEST);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.DECLINE, null);
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 

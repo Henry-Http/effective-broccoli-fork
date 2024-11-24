@@ -4,16 +4,20 @@ package com.nft.nftsite.services.payment;
 import com.nft.nftsite.data.dtos.requests.payment.*;
 import com.nft.nftsite.data.dtos.responses.BuyNftResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
+import com.nft.nftsite.data.dtos.responses.PaymentDetails;
 import com.nft.nftsite.data.dtos.responses.UserDetailsDto;
 import com.nft.nftsite.data.dtos.responses.payment.AdditionalInfoJson;
 import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
 import com.nft.nftsite.data.dtos.responses.payment.WebhookResponse;
 import com.nft.nftsite.data.models.*;
+import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.data.models.enumerations.TransactionType;
 import com.nft.nftsite.data.repository.PaymentRepository;
 import com.nft.nftsite.data.repository.TransactionRepository;
 import com.nft.nftsite.exceptions.NFTSiteException;
+import com.nft.nftsite.exceptions.UserNotFoundException;
 import com.nft.nftsite.services.nft.NftService;
+import com.nft.nftsite.services.users.EmailConfirmService;
 import com.nft.nftsite.services.users.UserDetailsService;
 import com.nft.nftsite.services.users.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +44,7 @@ public class CheckoutServiceImpl implements CheckoutService{
     private final PaymentRepository paymentRepository;
     private final UserDetailsService userDetailsService;
     private final TransactionRepository transactionRepository;
+    private final EmailConfirmService emailConfirmService;
 
     @Value("${helio.public.key}")
     private String apiKey;
@@ -156,13 +161,25 @@ public class CheckoutServiceImpl implements CheckoutService{
             throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
         }
         userDetailsService.deductBalance(nft.getStartingPrice());
+        User formerOwnerUser = userService.getUserByUsername(nft.getOwner().getEmailAddress()).orElseThrow(() -> new UserNotFoundException("User not found"));
         nftService.updateNftOwner(nftId);
+        emailConfirmService.sendPaymentEmail(userDetails.getEmailAddress(), nft.getStartingPrice().toString(), PaymentType.USER_PURCHASE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()));
         Transaction transaction = new Transaction();
         transaction.setAmount(nft.getStartingPrice());
         transaction.setTransactionType(TransactionType.PURCHASE);
         transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
         transaction.setUser(userService.getUserById(userService.getAuthenticatedUser().getId()));
         transactionRepository.save(transaction);
+
+
+        userDetailsService.creditBalance(formerOwnerUser.getUserDetails().getId(), nft.getStartingPrice());
+        emailConfirmService.sendPaymentEmail(formerOwnerUser.getUsername(), nft.getStartingPrice().toString(), PaymentType.USER_SALE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()));
+        Transaction newTransaction = new Transaction();
+        newTransaction.setAmount(nft.getStartingPrice());
+        newTransaction.setTransactionType(TransactionType.SALE);
+        newTransaction.setDebitOrCreditStatus(TransactionType.CREDIT);
+        newTransaction.setUser(formerOwnerUser);
+        transactionRepository.save(newTransaction);
         return BuyNftResponse.builder()
                 .nftId(nftId)
                 .nftName(nft.getName())

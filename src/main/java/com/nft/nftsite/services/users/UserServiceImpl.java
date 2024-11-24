@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
                 .firstName(managedUserDto.getFirstName())
                 .lastName(managedUserDto.getLastName())
                 .createdAt(LocalDateTime.now())
+                .balance(0.0)
                 .build();
 
         User user = User.builder()

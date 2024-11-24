@@ -6,6 +6,7 @@ public enum TransactionType {
     PURCHASE,
     GAS_FEE_REMOVAL,
     DEBIT,
-    CREDIT
+    CREDIT,
+    SALE
 
 }

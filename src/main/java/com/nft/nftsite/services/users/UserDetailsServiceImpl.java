@@ -117,6 +117,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         userDetailsRepository.save(userDetails);
     }
 
+    @Override
+    public void creditBalance(Long id, Double startingPrice) {
+        UserDetails userDetails = userDetailsRepository.findById(id)
+                .orElseThrow(() -> new NFTSiteException("User not found", HttpStatus.NOT_FOUND));
+        userDetails.setBalance(userDetails.getBalance() + startingPrice);
+        userDetailsRepository.save(userDetails);
+    }
+
     private void sendWelcomeEmail(UserDetails userDetails) {
         Context context = new Context();
         context.setVariable("firstName", userDetails.getFirstName());

@@ -1,5 +1,6 @@
 package com.nft.nftsite.services.users;
 
+import com.nft.nftsite.data.dtos.responses.PaymentDetails;
 import com.nft.nftsite.data.models.enumerations.EmailConfirmType;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.exceptions.UnauthorizedRequestException;
@@ -50,21 +51,32 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     }
 
     @Override
-    public void sendPaymentEmail(String email, String amount, PaymentType paymentType) {
+    public void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails) {
         Context context = new Context();
         context.setVariable("email", email);
-        context.setVariable("amount", amount);
+
+        if (paymentDetails != null) {
+            context.setVariable("nftName", paymentDetails.getNftName());
+            context.setVariable("amount", paymentDetails.getAmount());
+        } else {
+            context.setVariable("amount", amount.split("---")[0]);
+            context.setVariable("paymentId", amount.split("---")[1]);
+        }
 
         String subject = switch (paymentType) {
             case APPROVAL -> "Payment Approved!";
             case DECLINE -> "Payment Declined!";
             case REQUEST -> "New Payment Request";
+            case USER_PURCHASE -> "New NFT Item in Collection!";
+            case USER_SALE -> "New Sale!";
         };
 
         String template = switch (paymentType) {
             case APPROVAL -> "payment-approved";
             case DECLINE -> "payment-declined";
             case REQUEST -> "payment-request";
+            case USER_PURCHASE -> "new-purchase";
+            case USER_SALE -> "new-sale";
         };
 
         String htmlContent = templateEngine.process(template, context);
@@ -103,7 +115,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
                 "patrick.okafor@pallettex.com"
         );
         for (String email : emails) {
-            sendPaymentEmail(email, amount, PaymentType.REQUEST);
+            sendPaymentEmail(email, amount, PaymentType.REQUEST, null);
         }
     }
 

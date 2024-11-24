@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentCardDto {
 
-    private Double totalAmountPaid;
+    private int totalTransactions;
 
     private Double pendingPayments;
 

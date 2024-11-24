@@ -21,4 +21,6 @@ public class UserTransaction {
 
     private LocalDateTime transactionTime;
 
+    private TransactionType debitOrCreditStatus;
+
 }

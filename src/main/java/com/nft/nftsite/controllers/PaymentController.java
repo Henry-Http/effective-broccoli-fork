@@ -47,14 +47,14 @@ public class PaymentController {
 
     @GetMapping("/failed")
     @Secured("ROLE_ADMIN")
-    @Operation(summary = "Get all pending payments", description = "Get all failed payments")
+    @Operation(summary = "Get all declined payments", description = "Get all declined payments")
     public ResponseEntity<List<PaymentRequestDto>> getAllFailedPayments() {
         return ResponseEntity.ok(paymentService.getAllFailedPayments());
     }
 
     @GetMapping("/cards-data")
     @Secured("ROLE_ADMIN")
-    @Operation(summary = "Get all pending payments", description = "Get cards data")
+    @Operation(summary = "Get payments data insight", description = "Get cards data")
     public ResponseEntity<PaymentCardDto> getPaymentCards() {
         return ResponseEntity.ok(paymentService.getPaymentCards());
     }
@@ -66,12 +66,14 @@ public class PaymentController {
     }
 
     @PostMapping(value = "/approve/{paymentId}")
+    @Secured("ROLE_ADMIN")
     @Operation(summary = "Approve payment request")
     public ResponseEntity<DepositResponse> approvePayment(@PathVariable Long paymentId) {
         return new ResponseEntity<>(paymentService.approvePayment(paymentId), HttpStatus.OK);
     }
 
     @PostMapping(value = "/decline/{paymentId}")
+    @Secured("ROLE_ADMIN")
     @Operation(summary = "Decline payment request")
     public ResponseEntity<DepositResponse> declinePayment(@PathVariable Long paymentId) {
         return new ResponseEntity<>(paymentService.declinePayment(paymentId), HttpStatus.OK);

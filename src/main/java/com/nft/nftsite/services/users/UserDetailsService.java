@@ -19,4 +19,6 @@ public interface UserDetailsService {
     DepositResponse getUserBalance();
 
     void deductBalance(double amount);
+
+    void creditBalance(Long id, Double startingPrice);
 }

@@ -1,6 +1,7 @@
 package com.nft.nftsite.services.users;
 
 
+import com.nft.nftsite.data.dtos.responses.PaymentDetails;
 import com.nft.nftsite.data.models.enumerations.EmailConfirmType;
 import com.nft.nftsite.data.models.EmailConfirm;
 import com.nft.nftsite.data.models.User;
@@ -12,7 +13,7 @@ public interface EmailConfirmService {
 
     void sendAdminInvite(User user, String inviterName);
 
-    void sendPaymentEmail(String email, String amount, PaymentType paymentType);
+    void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails);
 
     EmailConfirm retrieveByToken(String token);
 
