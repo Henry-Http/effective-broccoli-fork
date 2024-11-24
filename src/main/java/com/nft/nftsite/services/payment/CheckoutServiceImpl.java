@@ -30,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +56,6 @@ public class CheckoutServiceImpl implements CheckoutService{
     @Value("${helio.url}")
     private String helioUrl;
 
-    @Override
     public WebhookResponse receiveWebhook(HelioWebhookPayload webhookPayload) {
         TransactionObject object = webhookPayload.getTransactionObject();
         TransactionMetaObject metaObject = object.getMeta();
@@ -95,7 +92,6 @@ public class CheckoutServiceImpl implements CheckoutService{
                 .build();
     }
 
-    @Override
     public BeginCheckoutResponse buyNftNow(Long nftId) {
         NftResponse nftItem = nftService.findById(nftId);
         User currentUser = userService.getAuthenticatedUser(true);
@@ -121,35 +117,6 @@ public class CheckoutServiceImpl implements CheckoutService{
         } catch (HttpClientErrorException | HttpServerErrorException exception) {
             throw new NFTSiteException(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Override
-    public List<WebhookResponse> getPayments() {
-        List<Payments> paymentsMade = paymentRepository.findAll();
-        List<WebhookResponse> responses = new ArrayList<>();
-        for (Payments newPayment : paymentsMade) {
-            responses.add(WebhookResponse.builder()
-                    .paymentId(newPayment.getId())
-                    .paymentEmail(newPayment.getPaymentEmail())
-                    .amountPaid(newPayment.getAmountPaid())
-                    .payLinkId(newPayment.getPayLinkId())
-                    .createdAt(newPayment.getCreatedAt())
-                    .deliveryAddress(newPayment.getDeliveryAddress())
-                    .itemPrice(newPayment.getItemPrice())
-                    .userId(newPayment.getPayer().getId())
-                    .build());
-        }
-        return responses;
-    }
-
-    @Override
-    public Double calculateTotal() {
-        List<Payments> paymentsMade = paymentRepository.findAll();
-        Double total = 0.0;
-        for (Payments newPayment : paymentsMade) {
-            total += newPayment.getAmountPaid();
-        }
-        return total;
     }
 
     @Override

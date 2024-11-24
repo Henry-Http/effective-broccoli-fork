@@ -15,6 +15,6 @@ public class PaymentCardDto {
 
     private Double pendingPayments;
 
-    private Double approvedPayments;
+    private Double declinedPayments;
 
 }

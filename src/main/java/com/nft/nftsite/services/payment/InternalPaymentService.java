@@ -5,7 +5,6 @@ import com.nft.nftsite.data.dtos.requests.payment.PaymentCardDto;
 import com.nft.nftsite.data.dtos.requests.payment.PaymentRequestDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
-
 import java.util.List;
 
 public interface InternalPaymentService {
@@ -25,5 +24,9 @@ public interface InternalPaymentService {
     DepositResponse approvePayment(Long paymentId);
 
     DepositResponse declinePayment(Long paymentId);
+
+    Double calculateTotal();
+
+    long getPayments();
 
 }

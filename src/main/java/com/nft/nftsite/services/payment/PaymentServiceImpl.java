@@ -75,13 +75,13 @@ public class PaymentServiceImpl implements InternalPaymentService{
     @Override
     public PaymentCardDto getPaymentCards() {
         List<PaymentRequestDto> pending = getAllPendingPayments();
-        List<PaymentRequestDto> approved = getAllPendingPayments();
+        List<PaymentRequestDto> declined = getAllFailedPayments();
 
         Double pendingTotal = pending.stream().mapToDouble(PaymentRequestDto::getAmount).sum();
-        Double approvedTotal = approved.stream().mapToDouble(PaymentRequestDto::getAmount).sum();
+        Double declinedTotal = declined.stream().mapToDouble(PaymentRequestDto::getAmount).sum();
 
         return PaymentCardDto.builder()
-                .approvedPayments(approvedTotal)
+                .declinedPayments(declinedTotal)
                 .pendingPayments(pendingTotal)
                 .totalTransactions(transactionRepository.findAll().size())
                 .build();
@@ -127,6 +127,30 @@ public class PaymentServiceImpl implements InternalPaymentService{
         User user = userService.getUserById(payment.getUser().getId());
         emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.DECLINE, null);
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
+    }
+
+    @Override
+    public Double calculateTotal() {
+        Double sum = 0.0;
+        List<Transaction> transactions = transactionRepository.findAll();
+        for (Transaction transaction: transactions) {
+            if (transaction.getTransactionType() == TransactionType.GAS_FEE_REMOVAL) {
+                sum += transaction.getAmount();
+            }
+        }
+        return sum;
+    }
+
+    @Override
+    public long getPayments() {
+        long sum = 0L;
+        List<Transaction> transactions = transactionRepository.findAll();
+        for (Transaction transaction: transactions) {
+            if (transaction.getTransactionType() == TransactionType.PURCHASE) {
+                sum += 1;
+            }
+        }
+        return sum;
     }
 
 }

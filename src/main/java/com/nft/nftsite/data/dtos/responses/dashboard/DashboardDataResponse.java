@@ -16,7 +16,7 @@ import java.util.List;
 public class DashboardDataResponse {
 
     private Long totalUsers;
-    private Long totalPurchases;
+    private long totalPurchases;
     private Double totalAmount;
     private List<UserDto> users;
 

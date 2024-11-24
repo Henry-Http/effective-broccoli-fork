@@ -45,7 +45,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getAllPendingPayments());
     }
 
-    @GetMapping("/failed")
+    @GetMapping("/declined")
     @Secured("ROLE_ADMIN")
     @Operation(summary = "Get all declined payments", description = "Get all declined payments")
     public ResponseEntity<List<PaymentRequestDto>> getAllFailedPayments() {
