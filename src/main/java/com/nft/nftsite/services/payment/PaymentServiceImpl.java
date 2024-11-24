@@ -44,7 +44,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         payment.setUser(user);
         payment.setStatus(InternalPaymentStatus.PENDING);
         payment = paymentRepository.save(payment);
-        emailConfirmService.sendPaymentRequestEmail(payment.getAmount().toString());
+        emailConfirmService.sendPaymentRequestEmail(payment.getAmount() + "---" + payment.getId());
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 
