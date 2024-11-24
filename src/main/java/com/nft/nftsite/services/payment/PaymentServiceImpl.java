@@ -11,6 +11,7 @@ import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.models.UserDetails;
 import com.nft.nftsite.data.models.enumerations.InternalPaymentStatus;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
+import com.nft.nftsite.data.models.enumerations.TransactionType;
 import com.nft.nftsite.data.repository.InternalPaymentRepository;
 import com.nft.nftsite.data.repository.TransactionRepository;
 import com.nft.nftsite.exceptions.NFTSiteException;
@@ -103,8 +104,14 @@ public class PaymentServiceImpl implements InternalPaymentService{
         userDetails.setBalance(userDetails.getBalance() + payment.getAmount());
         user.setUserDetails(userDetails);
         userService.save(user);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(payment.getAmount());
+        transaction.setTransactionType(TransactionType.DEPOSIT);
+        transaction.setDebitOrCreditStatus(TransactionType.CREDIT);
+        transaction.setUser(user);
+        transactionRepository.save(transaction);
         payment.setStatus(InternalPaymentStatus.APPROVED);
-        paymentRepository.save(payment);
+        payment = paymentRepository.save(payment);
         emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount().toString(), PaymentType.REQUEST);
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
@@ -113,7 +120,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
     public DepositResponse declinePayment(Long paymentId) {
         InternalPayments payment = paymentRepository.findById(paymentId).orElseThrow(() -> new NFTSiteException("Payment not found", HttpStatus.NOT_FOUND));
         payment.setStatus(InternalPaymentStatus.DECLINED);
-        paymentRepository.save(payment);
+        payment = paymentRepository.save(payment);
         User user = userService.getUserById(payment.getUser().getId());
         emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount().toString(), PaymentType.REQUEST);
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();

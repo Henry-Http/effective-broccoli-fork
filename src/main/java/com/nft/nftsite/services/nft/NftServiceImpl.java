@@ -8,8 +8,10 @@ import com.nft.nftsite.data.dtos.responses.CategoryResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.data.models.*;
 import com.nft.nftsite.data.models.enumerations.NftStatus;
+import com.nft.nftsite.data.models.enumerations.TransactionType;
 import com.nft.nftsite.data.repository.CategoryRepository;
 import com.nft.nftsite.data.repository.NftItemRepository;
+import com.nft.nftsite.data.repository.TransactionRepository;
 import com.nft.nftsite.exceptions.CategoryNameAlreadyExistsException;
 import com.nft.nftsite.exceptions.CategoryNotFoundException;
 import com.nft.nftsite.exceptions.NFTSiteException;
@@ -43,6 +45,7 @@ public class NftServiceImpl implements NftService {
     private final UserService userService;
     private final ImageService imageService;
     private final UserDetailsService userDetailsService;
+    private final TransactionRepository transactionRepository;
 
     @Value("${PALLETTEX_GAS_FEE}")
     private String gasFee;
@@ -79,6 +82,12 @@ public class NftServiceImpl implements NftService {
                 .nftStatus(NftStatus.FOR_SALE)
                 .build();
         userDetailsService.deductBalance(Double.parseDouble(gasFee));
+        Transaction transaction = new Transaction();
+        transaction.setAmount(Double.parseDouble(gasFee));
+        transaction.setTransactionType(TransactionType.GAS_FEE_REMOVAL);
+        transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
+        transaction.setUser(dbUser);
+        transactionRepository.save(transaction);
         nftItem = nftRepository.save(nftItem);
         return modelMapper.map(nftItem, NftResponse.class);
     }

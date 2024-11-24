@@ -54,7 +54,7 @@ public class PaymentController {
 
     @GetMapping("/cards-data")
     @Secured("ROLE_ADMIN")
-    @Operation(summary = "Get all pending payments", description = "Get all failed payments")
+    @Operation(summary = "Get all pending payments", description = "Get cards data")
     public ResponseEntity<PaymentCardDto> getPaymentCards() {
         return ResponseEntity.ok(paymentService.getPaymentCards());
     }
