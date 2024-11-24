@@ -2,15 +2,19 @@ package com.nft.nftsite.services.payment;
 
 
 import com.nft.nftsite.data.dtos.requests.payment.*;
+import com.nft.nftsite.data.dtos.responses.BuyNftResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
+import com.nft.nftsite.data.dtos.responses.UserDetailsDto;
 import com.nft.nftsite.data.dtos.responses.payment.AdditionalInfoJson;
 import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
 import com.nft.nftsite.data.dtos.responses.payment.WebhookResponse;
-import com.nft.nftsite.data.models.Payments;
-import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.*;
+import com.nft.nftsite.data.models.enumerations.TransactionType;
 import com.nft.nftsite.data.repository.PaymentRepository;
+import com.nft.nftsite.data.repository.TransactionRepository;
 import com.nft.nftsite.exceptions.NFTSiteException;
 import com.nft.nftsite.services.nft.NftService;
+import com.nft.nftsite.services.users.UserDetailsService;
 import com.nft.nftsite.services.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -18,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
@@ -33,6 +38,8 @@ public class CheckoutServiceImpl implements CheckoutService{
     private final UserService userService;
     private final RestClient restClient;
     private final PaymentRepository paymentRepository;
+    private final UserDetailsService userDetailsService;
+    private final TransactionRepository transactionRepository;
 
     @Value("${helio.public.key}")
     private String apiKey;
@@ -69,7 +76,7 @@ public class CheckoutServiceImpl implements CheckoutService{
         newPayment.setPaymentFullName(customerDetails.getFullName());
         newPayment.setDeliveryAddress(customerDetails.getDeliveryAddress());
         newPayment.setAdditionalJson(customerDetails.getAdditionalJSON());
-        newPayment.setItemPrice(nftItem.getCurrentBid());
+        newPayment.setItemPrice(nftItem.getStartingPrice());
         newPayment = paymentRepository.save(newPayment);
         return WebhookResponse.builder()
                 .paymentId(newPayment.getId())
@@ -96,7 +103,7 @@ public class CheckoutServiceImpl implements CheckoutService{
                 .build();
         CreateChargeRequest request = CreateChargeRequest.builder()
                 .paymentRequestId(payLinkId)
-                .requestAmount(String.valueOf(nftItem.getCurrentBid()))
+                .requestAmount(String.valueOf(nftItem.getStartingPrice()))
                 .prepareRequestBody(chargePrepareRequestBody)
                 .build();
         try {
@@ -138,6 +145,30 @@ public class CheckoutServiceImpl implements CheckoutService{
             total += newPayment.getAmountPaid();
         }
         return total;
+    }
+
+    @Override
+    @Transactional
+    public BuyNftResponse buyNft(Long nftId) {
+        NftResponse nft = nftService.findById(nftId);
+        UserDetailsDto userDetails = userDetailsService.getUserDetails();
+        if (userDetails.getBalance() < nft.getStartingPrice()) {
+            throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
+        }
+        userDetailsService.deductBalance(nft.getStartingPrice());
+        nftService.updateNftOwner(nftId);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(nft.getStartingPrice());
+        transaction.setTransactionType(TransactionType.PURCHASE);
+        transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
+        transaction.setUser(userService.getUserById(userService.getAuthenticatedUser().getId()));
+        transactionRepository.save(transaction);
+        return BuyNftResponse.builder()
+                .nftId(nftId)
+                .nftName(nft.getName())
+                .nftPrice(nft.getStartingPrice())
+                .nftStatus(nft.getNftStatus())
+                .build();
     }
 
 }

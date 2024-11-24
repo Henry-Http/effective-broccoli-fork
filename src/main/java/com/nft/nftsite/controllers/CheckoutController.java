@@ -20,8 +20,7 @@ public class CheckoutController {
     @PostMapping(value = "/buy-now/{nftId}")
     @Operation(summary = "Buy an NFT")
     public ResponseEntity<BuyNftResponse> buyNft(@PathVariable Long nftId) {
-//        return new ResponseEntity<>(checkoutService.buyNftNow(nftId), HttpStatus.OK);
-        return null;
+        return new ResponseEntity<>(checkoutService.buyNft(nftId), HttpStatus.OK);
     }
 
 }

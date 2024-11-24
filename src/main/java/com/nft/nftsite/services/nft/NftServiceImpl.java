@@ -74,7 +74,6 @@ public class NftServiceImpl implements NftService {
                 .name(nftRequest.getName())
                 .description(nftRequest.getDescription())
                 .startingPrice(nftRequest.getStartingPrice())
-                .currentBid(0.00)
                 .slug(generateSlug())
                 .category(foundCategory)
                 .owner(dbUser)
@@ -172,18 +171,39 @@ public class NftServiceImpl implements NftService {
     }
 
     @Override
+    public Category findCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+    }
+
+    @Override
     public PageDto<NftResponse> getOneUsersCollection(Pageable pageable) {
-        return null;
+        User currentUser = userService.getAuthenticatedUser(true);
+        User dbUser = userService.getUserById(currentUser.getId());
+        Page<NftItem> nftPage = nftRepository.findByOwnerAndNftStatus(dbUser, NftStatus.HAS_BEEN_BOUGHT, pageable);
+        Type pageDtoType = new TypeToken<PageDto<NftResponse>>() {
+        }.getType();
+        return modelMapper.map(nftPage, pageDtoType);
     }
 
     @Override
     public PageDto<NftResponse> getOneUsersCreations(Pageable pageable) {
-        return null;
+        User currentUser = userService.getAuthenticatedUser(true);
+        User dbUser = userService.getUserById(currentUser.getId());
+        Page<NftItem> nftPage = nftRepository.findByOwnerAndNftStatus(dbUser, NftStatus.FOR_SALE, pageable);
+        Type pageDtoType = new TypeToken<PageDto<NftResponse>>() {
+        }.getType();
+        return modelMapper.map(nftPage, pageDtoType);
     }
 
+
     @Override
-    public Category findCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId).orElseThrow(CategoryNotFoundException::new);
+    public void updateNftOwner(Long nftId) {
+        NftItem nftItem = nftRepository.findById(nftId).orElseThrow(() -> new NFTSiteException("NFT not found", HttpStatus.NOT_FOUND));
+        nftItem.setNftStatus(NftStatus.HAS_BEEN_BOUGHT);
+        User currentUser = userService.getAuthenticatedUser(true);
+        User dbUser = userService.getUserById(currentUser.getId());
+        nftItem.setOwner(dbUser);
+        nftRepository.save(nftItem);
     }
 
     private String generateSlug() {

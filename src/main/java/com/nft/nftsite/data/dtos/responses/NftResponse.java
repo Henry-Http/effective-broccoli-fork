@@ -27,8 +27,6 @@ public class NftResponse {
 
     private Double startingPrice;
 
-    private Double currentBid;
-
     private UserDetailsDto owner;
 
     private String description;

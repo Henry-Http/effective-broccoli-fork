@@ -32,8 +32,6 @@ public class NftItem {
 
     private Double startingPrice;
 
-    private Double currentBid;
-
     @OneToOne(optional = false)
     private Image picture;
 

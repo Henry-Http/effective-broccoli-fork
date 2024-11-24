@@ -8,6 +8,7 @@ import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.models.UserDetails;
 import com.nft.nftsite.data.repository.UserDetailsRepository;
 import com.nft.nftsite.exceptions.FileTypeNotAcceptableException;
+import com.nft.nftsite.exceptions.NFTSiteException;
 import com.nft.nftsite.exceptions.UsernameAlreadyUsedException;
 import com.nft.nftsite.services.cloudinaryImage.ImageService;
 import com.nft.nftsite.services.email.EmailService;
@@ -15,6 +16,7 @@ import com.nft.nftsite.utils.ValidationUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -108,6 +110,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public void deductBalance(double amount) {
         User authUser = userService.getAuthenticatedUser();
         UserDetails userDetails = authUser.getUserDetails();
+        if (userDetails.getBalance() < amount) {
+            throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
+        }
         userDetails.setBalance(userDetails.getBalance() - amount);
         userDetailsRepository.save(userDetails);
     }

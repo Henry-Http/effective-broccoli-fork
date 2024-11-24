@@ -1,6 +1,7 @@
 package com.nft.nftsite.services.payment;
 
 import com.nft.nftsite.data.dtos.requests.payment.HelioWebhookPayload;
+import com.nft.nftsite.data.dtos.responses.BuyNftResponse;
 import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
 import com.nft.nftsite.data.dtos.responses.payment.WebhookResponse;
 
@@ -15,4 +16,6 @@ public interface CheckoutService {
     List<WebhookResponse> getPayments();
 
     Double calculateTotal();
+
+    BuyNftResponse buyNft(Long nftId);
 }

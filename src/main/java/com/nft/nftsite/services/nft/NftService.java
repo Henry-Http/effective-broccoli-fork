@@ -41,4 +41,5 @@ public interface NftService {
 
     PageDto<NftResponse> getOneUsersCreations(Pageable pageable);
 
+    void updateNftOwner(Long nftId);
 }

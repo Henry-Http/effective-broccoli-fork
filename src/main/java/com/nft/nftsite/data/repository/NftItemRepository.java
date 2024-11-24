@@ -29,6 +29,10 @@ public interface NftItemRepository extends JpaRepository<NftItem, Long> {
 
     Long countAllByCategory_Id(Long categoryId);
 
+    @Query("SELECT n FROM NftItem n WHERE n.owner = :owner AND n.nftStatus = :status")
+    Page<NftItem> findByOwnerAndNftStatus(@Param("owner") User owner, @Param("status") NftStatus status, Pageable pageable);
+
+
     /**
      * @Query("SELECT n FROM NftItem n " +
      *             "WHERE (:search IS NULL OR LOWER(n.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
