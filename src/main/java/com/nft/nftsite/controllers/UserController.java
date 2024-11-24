@@ -1,5 +1,6 @@
 package com.nft.nftsite.controllers;
 
+import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.services.users.UserDetailsService;
 import com.nft.nftsite.services.users.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,8 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.nft.nftsite.data.dtos.requests.*;
 import com.nft.nftsite.data.dtos.responses.*;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -51,6 +50,12 @@ public class UserController {
     @Operation(summary = "Login")
     public ResponseEntity<TokenResponseDto> login(@Valid @RequestBody LoginRequestDto requestDto) {
         return new ResponseEntity<>(userService.login(requestDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/get-balance")
+    @Operation(summary = "Get user balance")
+    public ResponseEntity<DepositResponse> getUserBalance() {
+        return new ResponseEntity<>(userDetailsService.getUserBalance(), HttpStatus.OK);
     }
 
     @GetMapping("/details")
@@ -101,7 +106,7 @@ public class UserController {
 
     @PostMapping("/admin/invite")
     @Operation(summary = "Invite new admin user")
-//    @Secured("ROLE_ADMIN")
+    @Secured("ROLE_ADMIN")
     public ResponseEntity<AdminInvitationDto> inviteNewUser(@RequestBody @Valid AdminInvitationDto requestDto) {
         return new ResponseEntity<>(userService.inviteAdmin(requestDto), HttpStatus.OK);
     }

@@ -35,4 +35,6 @@ public class UserDetailsDto {
 
     private LocalDateTime createdAt;
 
+    private Double balance;
+
 }

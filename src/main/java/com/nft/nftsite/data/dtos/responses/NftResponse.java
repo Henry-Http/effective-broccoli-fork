@@ -4,6 +4,7 @@ package com.nft.nftsite.data.dtos.responses;
 import com.nft.nftsite.data.models.Category;
 import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.enumerations.NftStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +36,8 @@ public class NftResponse {
     private LocalDateTime createdAt;
 
     private ImageDto picture;
+
+    private NftStatus nftStatus;
 
     public void setOwner(User owner) {
         if (owner == null) {

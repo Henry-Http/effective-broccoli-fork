@@ -36,4 +36,9 @@ public interface NftService {
     List<CategoryResponse> findAllCategoryForAdmin();
 
     void restoreCategoryById(Long categoryId);
+
+    PageDto<NftResponse> getOneUsersCollection(Pageable pageable);
+
+    PageDto<NftResponse> getOneUsersCreations(Pageable pageable);
+
 }

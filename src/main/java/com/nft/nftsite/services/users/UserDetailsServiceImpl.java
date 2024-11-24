@@ -2,6 +2,7 @@ package com.nft.nftsite.services.users;
 
 import com.nft.nftsite.data.dtos.requests.UpdateUserDetailsDto;
 import com.nft.nftsite.data.dtos.responses.UserDetailsDto;
+import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.models.UserDetails;
@@ -91,6 +92,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Image image = imageService.uploadNewImage(picture);
         userDetails.setDisplayPicture(image);
         return modelMapper.map(userDetailsRepository.save(userDetails), UserDetailsDto.class);
+    }
+
+    @Override
+    public DepositResponse getUserBalance() {
+        User authUser = userService.getAuthenticatedUser();
+        UserDetails userDetails = authUser.getUserDetails();
+        return DepositResponse.builder()
+                .amount(userDetails.getBalance())
+                .status(null)
+                .build();
     }
 
     private void sendWelcomeEmail(UserDetails userDetails) {

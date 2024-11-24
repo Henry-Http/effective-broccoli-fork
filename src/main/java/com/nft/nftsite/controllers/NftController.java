@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,7 +26,6 @@ public class NftController {
 
     @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new NFT")
-    @Secured("ROLE_ADMIN")
     public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody @ModelAttribute CreateNftRequest nftRequest) {
         return new ResponseEntity<>(nftService.createNewNft(nftRequest), HttpStatus.OK);
     }
@@ -43,6 +41,18 @@ public class NftController {
             @RequestParam(required = false) Double currentBid) {
         NftFilterDto filterDto = new NftFilterDto(search, categoryId, minPrice, maxPrice, currentBid);
         return ResponseEntity.ok(nftService.getAllNfts(pageable, filterDto));
+    }
+
+    @GetMapping("/my-collection")
+    @Operation(summary = "Get a user's NFT collection", description = "NFTs that the user has bought")
+    public ResponseEntity<PageDto<NftResponse>> oneUsersCollection(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(nftService.getOneUsersCollection(pageable));
+    }
+
+    @GetMapping("/my-creations")
+    @Operation(summary = "Get NFTs that a user created", description = "NFTs that the user created")
+    public ResponseEntity<PageDto<NftResponse>> oneUsersCreation(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(nftService.getOneUsersCreations(pageable));
     }
 
 }

@@ -37,4 +37,6 @@ public class UserDetails {
 
     private LocalDateTime createdAt;
 
+    private Double balance = 0.0;
+
 }

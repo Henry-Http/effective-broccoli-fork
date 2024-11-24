@@ -10,6 +10,7 @@ import com.nft.nftsite.data.models.Category;
 import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.NftItem;
 import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.enumerations.NftStatus;
 import com.nft.nftsite.data.repository.CategoryRepository;
 import com.nft.nftsite.data.repository.NftItemRepository;
 import com.nft.nftsite.exceptions.CategoryNameAlreadyExistsException;
@@ -68,6 +69,7 @@ public class NftServiceImpl implements NftService {
                 .category(foundCategory)
                 .owner(dbUser)
                 .picture(picture)
+                .nftStatus(NftStatus.FOR_SALE)
                 .build();
         nftItem = nftRepository.save(nftItem);
         return modelMapper.map(nftItem, NftResponse.class);
@@ -79,9 +81,7 @@ public class NftServiceImpl implements NftService {
         Page<NftItem> nftPage = nftRepository.findAllNftsWithFilters(
                 search,
                 filterDto.getCategoryId(),
-//                filterDto.getMinPrice(),
-//                filterDto.getMaxPrice(),
-//                filterDto.getCurrentBid(),
+                NftStatus.FOR_SALE,
                 pageable
         );
         Type pageDtoType = new TypeToken<PageDto<NftResponse>>() {
@@ -152,6 +152,16 @@ public class NftServiceImpl implements NftService {
         Category category = findCategoryById(categoryId);
         category.setIsVisible(true);
         categoryRepository.save(category);
+    }
+
+    @Override
+    public PageDto<NftResponse> getOneUsersCollection(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public PageDto<NftResponse> getOneUsersCreations(Pageable pageable) {
+        return null;
     }
 
     @Override

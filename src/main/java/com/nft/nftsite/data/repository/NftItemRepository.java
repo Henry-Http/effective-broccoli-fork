@@ -2,6 +2,7 @@ package com.nft.nftsite.data.repository;
 
 import com.nft.nftsite.data.models.NftItem;
 import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.enumerations.NftStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,10 +19,12 @@ public interface NftItemRepository extends JpaRepository<NftItem, Long> {
 
     @Query("SELECT n FROM NftItem n " +
             "WHERE (CAST(:search AS text) IS NULL OR LOWER(n.name) LIKE :search) " +
-            "AND (:categoryId IS NULL OR n.category.id = :categoryId)")
+            "AND (:categoryId IS NULL OR n.category.id = :categoryId) " +
+            "AND (n.nftStatus = :nftStatus)")
     Page<NftItem> findAllNftsWithFilters(
             @Param("search") String search,
             @Param("categoryId") Long categoryId,
+            @Param("nftStatus") NftStatus nftStatus,
             Pageable pageable);
 
     Long countAllByCategory_Id(Long categoryId);

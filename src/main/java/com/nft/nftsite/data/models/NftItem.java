@@ -1,5 +1,6 @@
 package com.nft.nftsite.data.models;
 
+import com.nft.nftsite.data.models.enumerations.NftStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -35,6 +36,8 @@ public class NftItem {
 
     @OneToOne(optional = false)
     private Image picture;
+
+    private NftStatus nftStatus;
 
     private final LocalDateTime createdAt = LocalDateTime.now();
 
