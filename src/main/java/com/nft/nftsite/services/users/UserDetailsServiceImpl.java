@@ -101,7 +101,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User authUser = userService.getAuthenticatedUser();
         UserDetails userDetails = authUser.getUserDetails();
         return DepositResponse.builder()
-                .amount(userDetails.getBalance())
+                .amount(userDetails.getBalance() == null ? 0.00 : userDetails.getBalance())
                 .status(null)
                 .build();
     }
