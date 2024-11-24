@@ -65,4 +65,16 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getUserTransactionList());
     }
 
+    @PostMapping(value = "/approve/{paymentId}")
+    @Operation(summary = "Approve payment request")
+    public ResponseEntity<DepositResponse> approvePayment(@PathVariable Long paymentId) {
+        return new ResponseEntity<>(paymentService.approvePayment(paymentId), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/decline/{paymentId}")
+    @Operation(summary = "Decline payment request")
+    public ResponseEntity<DepositResponse> declinePayment(@PathVariable Long paymentId) {
+        return new ResponseEntity<>(paymentService.declinePayment(paymentId), HttpStatus.OK);
+    }
+
 }

@@ -18,4 +18,5 @@ public interface UserDetailsService {
 
     DepositResponse getUserBalance();
 
+    void deductBalance(double amount);
 }

@@ -1,6 +1,6 @@
 package com.nft.nftsite.controllers;
 
-import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
+import com.nft.nftsite.data.dtos.responses.BuyNftResponse;
 import com.nft.nftsite.services.payment.CheckoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -19,8 +19,9 @@ public class CheckoutController {
 
     @PostMapping(value = "/buy-now/{nftId}")
     @Operation(summary = "Buy an NFT")
-    public ResponseEntity<BeginCheckoutResponse> receiveWebhook(@PathVariable Long nftId) {
-        return new ResponseEntity<>(checkoutService.buyNftNow(nftId), HttpStatus.OK);
+    public ResponseEntity<BuyNftResponse> buyNft(@PathVariable Long nftId) {
+//        return new ResponseEntity<>(checkoutService.buyNftNow(nftId), HttpStatus.OK);
+        return null;
     }
 
 }

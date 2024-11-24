@@ -6,10 +6,7 @@ import com.nft.nftsite.data.dtos.requests.CreateNftRequest;
 import com.nft.nftsite.data.dtos.requests.NftFilterDto;
 import com.nft.nftsite.data.dtos.responses.CategoryResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
-import com.nft.nftsite.data.models.Category;
-import com.nft.nftsite.data.models.Image;
-import com.nft.nftsite.data.models.NftItem;
-import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.*;
 import com.nft.nftsite.data.models.enumerations.NftStatus;
 import com.nft.nftsite.data.repository.CategoryRepository;
 import com.nft.nftsite.data.repository.NftItemRepository;
@@ -17,6 +14,7 @@ import com.nft.nftsite.exceptions.CategoryNameAlreadyExistsException;
 import com.nft.nftsite.exceptions.CategoryNotFoundException;
 import com.nft.nftsite.exceptions.NFTSiteException;
 import com.nft.nftsite.services.cloudinaryImage.ImageService;
+import com.nft.nftsite.services.users.UserDetailsService;
 import com.nft.nftsite.services.users.UserService;
 import com.nft.nftsite.utils.PageDto;
 import com.nft.nftsite.utils.RandomStringGenerator;
@@ -24,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -43,6 +42,10 @@ public class NftServiceImpl implements NftService {
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final ImageService imageService;
+    private final UserDetailsService userDetailsService;
+
+    @Value("${PALLETTEX_GAS_FEE}")
+    private String gasFee;
 
     @Override
     @Transactional
@@ -59,6 +62,10 @@ public class NftServiceImpl implements NftService {
         }
         User currentUser = userService.getAuthenticatedUser(true);
         User dbUser = userService.getUserById(currentUser.getId());
+        UserDetails userDetails = dbUser.getUserDetails();
+        if (userDetails.getBalance() < Double.parseDouble(gasFee)) {
+            throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
+        }
         Image picture = imageService.uploadNewImage(nftRequest.getImage());
         NftItem nftItem = NftItem.builder()
                 .name(nftRequest.getName())
@@ -71,6 +78,7 @@ public class NftServiceImpl implements NftService {
                 .picture(picture)
                 .nftStatus(NftStatus.FOR_SALE)
                 .build();
+        userDetailsService.deductBalance(Double.parseDouble(gasFee));
         nftItem = nftRepository.save(nftItem);
         return modelMapper.map(nftItem, NftResponse.class);
     }

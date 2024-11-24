@@ -25,6 +25,7 @@ public class InternalPayments {
     @ManyToOne(cascade = CascadeType.ALL, optional = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private InternalPaymentStatus status;
 
     private String description;

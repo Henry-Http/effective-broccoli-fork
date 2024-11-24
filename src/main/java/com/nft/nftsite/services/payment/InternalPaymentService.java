@@ -22,4 +22,8 @@ public interface InternalPaymentService {
 
     List<UserTransaction> getUserTransactionList();
 
+    DepositResponse approvePayment(Long paymentId);
+
+    DepositResponse declinePayment(Long paymentId);
+
 }

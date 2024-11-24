@@ -104,6 +104,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .build();
     }
 
+    @Override
+    public void deductBalance(double amount) {
+        User authUser = userService.getAuthenticatedUser();
+        UserDetails userDetails = authUser.getUserDetails();
+        userDetails.setBalance(userDetails.getBalance() - amount);
+        userDetailsRepository.save(userDetails);
+    }
+
     private void sendWelcomeEmail(UserDetails userDetails) {
         Context context = new Context();
         context.setVariable("firstName", userDetails.getFirstName());

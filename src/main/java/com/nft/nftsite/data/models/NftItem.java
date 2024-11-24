@@ -37,6 +37,7 @@ public class NftItem {
     @OneToOne(optional = false)
     private Image picture;
 
+    @Enumerated(EnumType.STRING)
     private NftStatus nftStatus;
 
     private final LocalDateTime createdAt = LocalDateTime.now();

@@ -1,0 +1,6 @@
+package com.nft.nftsite.data.models.enumerations;
+
+public enum PaymentType {
+
+    APPROVAL, DECLINE, REQUEST
+}

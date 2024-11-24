@@ -27,6 +27,7 @@ public class Transaction {
 
     private Double amount;
 
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
 }

@@ -1,6 +1,7 @@
 package com.nft.nftsite.services.users;
 
 import com.nft.nftsite.data.models.enumerations.EmailConfirmType;
+import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.exceptions.UnauthorizedRequestException;
 import com.nft.nftsite.data.models.EmailConfirm;
 import com.nft.nftsite.data.models.User;
@@ -49,6 +50,28 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     }
 
     @Override
+    public void sendPaymentEmail(String email, String amount, PaymentType paymentType) {
+        Context context = new Context();
+        context.setVariable("email", email);
+        context.setVariable("amount", amount);
+
+        String subject = switch (paymentType) {
+            case APPROVAL -> "Payment Approved!";
+            case DECLINE -> "Payment Declined!";
+            case REQUEST -> "New Payment Request";
+        };
+
+        String template = switch (paymentType) {
+            case APPROVAL -> "payment-approved";
+            case DECLINE -> "payment-declined";
+            case REQUEST -> "payment-request";
+        };
+
+        String htmlContent = templateEngine.process(template, context);
+        emailService.sendEmail(email, subject, htmlContent);
+    }
+
+    @Override
     public EmailConfirm retrieveByToken(String token) {
         return emailConfirmRepository.findByToken(token)
                 .orElseThrow(UnauthorizedRequestException::new);
@@ -71,6 +94,16 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
             handleConfirmationSend(token);
         } else {
             this.sendConfirmation(user, EmailConfirmType.ACTIVATION);
+        }
+    }
+
+    @Override
+    public void sendPaymentRequestEmail(String amount) {
+        List<String> emails = List.of(
+                "patrick.okafor@pallettex.com"
+        );
+        for (String email : emails) {
+            sendPaymentEmail(email, amount, PaymentType.REQUEST);
         }
     }
 
