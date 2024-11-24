@@ -111,12 +111,14 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
 
     @Override
     public void sendPaymentRequestEmail(String amount) {
-        List<String> emails = List.of(
-                "patrick.okafor@pallettex.com"
-        );
-        for (String email : emails) {
-            sendPaymentEmail(email, amount, PaymentType.REQUEST, null);
-        }
+        //TODO: Uncomment this
+//        List<String> emails = List.of(
+//                "patrick.okafor@pallettex.com",
+//                "support@pallettex.com"
+//        );
+//        for (String email : emails) {
+//            sendPaymentEmail(email, amount, PaymentType.REQUEST, null);
+//        }
     }
 
     private EmailConfirm generateToken(User user, EmailConfirmType type) {
