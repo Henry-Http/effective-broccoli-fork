@@ -51,7 +51,7 @@ public class NftController {
     }
 
     @GetMapping("/my-collection")
-    @Operation(summary = "Get a user's NFT collection", description = "NFTs that the user has bought")
+    @Operation(summary = "Get NFTs that a user has bought", description = "NFTs that the user has bought")
     public ResponseEntity<PageDto<NftResponse>> oneUsersCollection(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(nftService.getOneUsersCollection(pageable));
     }
