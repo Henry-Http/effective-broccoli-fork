@@ -135,7 +135,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         List<Transaction> transactions = transactionRepository.findAll();
         for (Transaction transaction: transactions) {
             if (transaction.getTransactionType() == TransactionType.GAS_FEE_REMOVAL) {
-                sum += transaction.getAmount();
+                sum += (transaction.getAmount() * (double) -1);
             }
         }
         return sum;

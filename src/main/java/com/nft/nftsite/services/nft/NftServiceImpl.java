@@ -4,6 +4,7 @@ package com.nft.nftsite.services.nft;
 import com.nft.nftsite.data.dtos.requests.CreateCategoryRequest;
 import com.nft.nftsite.data.dtos.requests.CreateNftRequest;
 import com.nft.nftsite.data.dtos.requests.NftFilterDto;
+import com.nft.nftsite.data.dtos.requests.UpdateNftRequest;
 import com.nft.nftsite.data.dtos.responses.CategoryResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.data.models.*;
@@ -82,13 +83,36 @@ public class NftServiceImpl implements NftService {
                 .build();
         userDetailsService.deductBalance(Double.parseDouble(gasFee));
         Transaction transaction = new Transaction();
-        transaction.setAmount(Double.parseDouble(gasFee));
+        transaction.setAmount(Double.parseDouble(gasFee) * (double) -1);
         transaction.setTransactionType(TransactionType.GAS_FEE_REMOVAL);
         transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
         transaction.setUser(dbUser);
         transactionRepository.save(transaction);
         nftItem = nftRepository.save(nftItem);
         return modelMapper.map(nftItem, NftResponse.class);
+    }
+
+    @Override
+    public NftResponse updateNft(UpdateNftRequest nftRequest) {
+        Category foundCategory;
+        try {
+            foundCategory = findCategoryById(nftRequest.getCategoryId());
+        } catch (CategoryNotFoundException categoryNotFoundException) {
+            throw new NFTSiteException("Category does not exist", HttpStatus.BAD_REQUEST);
+        }
+        nftRequest.setName(nftRequest.getName().trim());
+        if (nftRepository.existsByNameEqualsIgnoreCase(nftRequest.getName())) {
+            throw new NFTSiteException("NFT with this name already exists", HttpStatus.BAD_REQUEST);
+        }
+        Image picture = imageService.uploadNewImage(nftRequest.getImage());
+        NftItem foundNft = nftRepository.findById(nftRequest.getId()).orElseThrow(() -> new NFTSiteException("NFT not found", HttpStatus.NOT_FOUND));
+        foundNft.setCategory(foundCategory);
+        foundNft.setName(nftRequest.getName());
+        foundNft.setDescription(nftRequest.getDescription());
+        foundNft.setStartingPrice(nftRequest.getStartingPrice());
+        foundNft.setPicture(picture);
+        nftRepository.save(foundNft);
+        return modelMapper.map(foundNft, NftResponse.class);
     }
 
     @Override

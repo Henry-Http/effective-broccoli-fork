@@ -2,6 +2,7 @@ package com.nft.nftsite.controllers;
 
 import com.nft.nftsite.data.dtos.requests.CreateNftRequest;
 import com.nft.nftsite.data.dtos.requests.NftFilterDto;
+import com.nft.nftsite.data.dtos.requests.UpdateNftRequest;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.services.nft.NftService;
 import com.nft.nftsite.utils.PageDto;
@@ -28,6 +29,12 @@ public class NftController {
     @Operation(summary = "Create new NFT")
     public ResponseEntity<NftResponse> createNewNft(@Valid @RequestBody @ModelAttribute CreateNftRequest nftRequest) {
         return new ResponseEntity<>(nftService.createNewNft(nftRequest), HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Update NFT Details")
+    public ResponseEntity<NftResponse> updateNft(@Valid @RequestBody @ModelAttribute UpdateNftRequest nftRequest) {
+        return new ResponseEntity<>(nftService.updateNft(nftRequest), HttpStatus.OK);
     }
 
     @GetMapping("/find")

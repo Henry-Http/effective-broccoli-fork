@@ -3,6 +3,7 @@ package com.nft.nftsite.services.nft;
 import com.nft.nftsite.data.dtos.requests.CreateCategoryRequest;
 import com.nft.nftsite.data.dtos.requests.CreateNftRequest;
 import com.nft.nftsite.data.dtos.requests.NftFilterDto;
+import com.nft.nftsite.data.dtos.requests.UpdateNftRequest;
 import com.nft.nftsite.data.dtos.responses.CategoryResponse;
 import com.nft.nftsite.data.dtos.responses.NftResponse;
 import com.nft.nftsite.data.models.Category;
@@ -42,4 +43,6 @@ public interface NftService {
     PageDto<NftResponse> getOneUsersCreations(Pageable pageable);
 
     void updateNftOwner(Long nftId);
+
+    NftResponse updateNft(@Valid UpdateNftRequest nftRequest);
 }

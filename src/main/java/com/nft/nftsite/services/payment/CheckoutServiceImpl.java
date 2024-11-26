@@ -132,7 +132,7 @@ public class CheckoutServiceImpl implements CheckoutService{
         nftService.updateNftOwner(nftId);
         emailConfirmService.sendPaymentEmail(userDetails.getEmailAddress(), nft.getStartingPrice().toString(), PaymentType.USER_PURCHASE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()));
         Transaction transaction = new Transaction();
-        transaction.setAmount(nft.getStartingPrice());
+        transaction.setAmount(nft.getStartingPrice() * (double) -1);
         transaction.setTransactionType(TransactionType.PURCHASE);
         transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
         transaction.setUser(userService.getUserById(userService.getAuthenticatedUser().getId()));
