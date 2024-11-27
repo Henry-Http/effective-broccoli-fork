@@ -20,7 +20,7 @@ public class NftItem {
 
     private String name;
 
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
     private User owner;
 
     @ManyToOne(cascade = CascadeType.ALL, optional = false)

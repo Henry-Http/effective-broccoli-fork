@@ -10,6 +10,7 @@ import com.nft.nftsite.data.dtos.responses.payment.AdditionalInfoJson;
 import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
 import com.nft.nftsite.data.dtos.responses.payment.WebhookResponse;
 import com.nft.nftsite.data.models.*;
+import com.nft.nftsite.data.models.enumerations.NftStatus;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.data.models.enumerations.TransactionType;
 import com.nft.nftsite.data.repository.PaymentRepository;
@@ -123,6 +124,9 @@ public class CheckoutServiceImpl implements CheckoutService{
     @Transactional
     public BuyNftResponse buyNft(Long nftId) {
         NftResponse nft = nftService.findById(nftId);
+        if (nft.getNftStatus() != NftStatus.FOR_SALE) {
+            throw new NFTSiteException("NFT is not available for purchase", HttpStatus.BAD_REQUEST);
+        }
         UserDetailsDto userDetails = userDetailsService.getUserDetails();
         if (userDetails.getBalance() < nft.getStartingPrice()) {
             throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);

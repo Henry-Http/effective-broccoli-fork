@@ -44,6 +44,7 @@ public class NftResponse {
         }
         this.owner = UserDetailsDto.builder()
                 .id(owner.getUserDetails().getId())
+                .emailAddress(owner.getUsername())
                 .firstName(owner.getUserDetails().getFirstName())
                 .lastName(owner.getUserDetails().getLastName())
                 .displayPicture(ImageDto.fromImage(owner.getUserDetails().getDisplayPicture()))
