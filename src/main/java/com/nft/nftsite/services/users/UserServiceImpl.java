@@ -436,10 +436,8 @@ public class UserServiceImpl implements UserService {
         String password = RandomStringGenerator.generateRandomString(16);
         adminUser.setPassword(passwordEncoder.encode(password));
         this.save(adminUser);
-//        emailConfirmService.sendAdminInvite(adminUser, this.getAuthenticatedUser().getUserDetails().getFirstName());
-        AdminInvitationDto dto = new AdminInvitationDto();
-        dto.setEmail(password);
-        return dto;
+        emailConfirmService.sendAdminInvite(adminUser, this.getAuthenticatedUser().getUserDetails().getFirstName());
+        return new AdminInvitationDto();
     }
 
 }
