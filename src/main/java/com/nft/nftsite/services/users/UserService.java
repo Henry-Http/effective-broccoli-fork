@@ -58,4 +58,6 @@ public interface UserService {
     AdminTokenResponseDto loginAdmin(LoginRequestDto requestDto);
 
     List<UserDto> getAllAdmins();
+
+    AdminInvitationDto resetAdminPassword(Long adminId);
 }

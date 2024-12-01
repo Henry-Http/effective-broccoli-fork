@@ -389,7 +389,6 @@ public class UserServiceImpl implements UserService {
         adminInvitationRepository.save(newInvitation);
         savedUser.setPassword(password);
         emailConfirmService.sendAdminInvite(savedUser, this.getAuthenticatedUser().getUserDetails().getFirstName());
-        savedUser.setPassword("");
         return mapper.map(newInvitation, AdminInvitationDto.class);
     }
 
@@ -429,6 +428,18 @@ public class UserServiceImpl implements UserService {
         Type pageDtoTypeToken = new TypeToken<List<UserDto>>() {
         }.getType();
         return mapper.map(allUsers, pageDtoTypeToken);
+    }
+
+    @Override
+    public AdminInvitationDto resetAdminPassword(Long adminId) {
+        User adminUser = getUserById(adminId);
+        String password = RandomStringGenerator.generateRandomString(16);
+        adminUser.setPassword(passwordEncoder.encode(password));
+        this.save(adminUser);
+//        emailConfirmService.sendAdminInvite(adminUser, this.getAuthenticatedUser().getUserDetails().getFirstName());
+        AdminInvitationDto dto = new AdminInvitationDto();
+        dto.setEmail(password);
+        return dto;
     }
 
 }

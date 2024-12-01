@@ -117,11 +117,11 @@ public class UserController {
         return new ResponseEntity<>(userService.loginAdmin(requestDto), HttpStatus.OK);
     }
 
-    @GetMapping("/admin/all")
-    @Operation(summary = "Get all admins")
+    @PostMapping("/admin/reset-password/{adminId}")
+    @Operation(summary = "Reset admin password")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<List<UserDto>> getAllAdmins() {
-        return ResponseEntity.ok(userService.getAllAdmins());
+    public ResponseEntity<AdminInvitationDto> getAllAdmins(@PathVariable Long adminId) {
+        return ResponseEntity.ok(userService.resetAdminPassword(adminId));
     }
 
 }
