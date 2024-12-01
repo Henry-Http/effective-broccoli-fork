@@ -69,6 +69,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
             case REQUEST -> "New Payment Request";
             case USER_PURCHASE -> "New NFT Item in Collection!";
             case USER_SALE -> "New Sale!";
+            case USER_REQUEST -> "New Payment Request";
         };
 
         String template = switch (paymentType) {
@@ -77,6 +78,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
             case REQUEST -> "payment-request";
             case USER_PURCHASE -> "new-purchase";
             case USER_SALE -> "new-sale";
+            case USER_REQUEST -> "payment-pending";
         };
 
         String htmlContent = templateEngine.process(template, context);
