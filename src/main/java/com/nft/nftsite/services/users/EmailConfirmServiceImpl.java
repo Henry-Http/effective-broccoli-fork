@@ -14,13 +14,16 @@ import com.nft.nftsite.utils.RandomStringGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import com.google.common.collect.Lists;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -122,17 +125,29 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         emails.forEach(email -> sendPaymentEmail(email, amount, PaymentType.REQUEST, null));
     }
 
-    @Override
     public void sendGeneralEmail(List<UserDto> allCustomers, GeneralMailRequest mailRequest) {
-        allCustomers.forEach(user -> {
-            Context context = new Context();
-            context.setVariable("email", user.getUsername());
-            context.setVariable("firstName", user.getUserDetails().getFirstName());
-            context.setVariable("theBody", mailRequest.getBody());
-            context.setVariable("mailTitle", mailRequest.getTitle());
+        List<List<UserDto>> batches = Lists.partition(allCustomers, 50);
 
-            String htmlContent = templateEngine.process("general-email", context);
-            emailService.sendEmail(user.getUsername(), mailRequest.getSubject(), htmlContent);
+        batches.forEach(batch -> CompletableFuture.runAsync(() -> processBatch(batch, mailRequest)));
+    }
+
+    @Async
+    public void processBatch(List<UserDto> batch, GeneralMailRequest mailRequest) {
+        batch.forEach(user -> {
+            try {
+                Context context = new Context();
+                context.setVariable("email", user.getUsername());
+                context.setVariable("firstName", user.getUserDetails().getFirstName());
+                context.setVariable("theBody", mailRequest.getBody());
+                context.setVariable("mailTitle", mailRequest.getTitle());
+
+                String htmlContent = templateEngine.process("general-email", context);
+                emailService.sendEmail(user.getUsername(), mailRequest.getSubject(), htmlContent);
+
+                log.info("Email sent to: {}", user.getUsername());
+            } catch (Exception e) {
+                log.error("Failed to send email to: {}", user.getUsername(), e);
+            }
         });
     }
 
