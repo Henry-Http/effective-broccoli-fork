@@ -131,4 +131,11 @@ public class UserController {
         return ResponseEntity.ok(userService.resetAdminPassword(adminId));
     }
 
+    @PostMapping("/send-mail")
+    @Operation(summary = "Send email to all users")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<GeneralMailResponse> sendGeneralMail(@RequestBody GeneralMailRequest mailRequest) {
+        return ResponseEntity.ok(userService.sendGeneralMail(mailRequest));
+    }
+
 }

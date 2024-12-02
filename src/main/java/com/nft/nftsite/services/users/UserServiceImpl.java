@@ -440,4 +440,11 @@ public class UserServiceImpl implements UserService {
         return new AdminInvitationDto();
     }
 
+    @Override
+    public GeneralMailResponse sendGeneralMail(GeneralMailRequest mailRequest) {
+        List<UserDto> allCustomers = getAllUsers();
+        emailConfirmService.sendGeneralEmail(allCustomers, mailRequest);
+        return new GeneralMailResponse();
+    }
+
 }

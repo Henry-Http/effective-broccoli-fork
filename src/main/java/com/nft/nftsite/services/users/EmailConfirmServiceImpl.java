@@ -1,6 +1,8 @@
 package com.nft.nftsite.services.users;
 
+import com.nft.nftsite.data.dtos.requests.GeneralMailRequest;
 import com.nft.nftsite.data.dtos.responses.PaymentDetails;
+import com.nft.nftsite.data.dtos.responses.UserDto;
 import com.nft.nftsite.data.models.enumerations.EmailConfirmType;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.exceptions.UnauthorizedRequestException;
@@ -118,6 +120,20 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         List<String> emails = new ArrayList<>();
         userService.getAllAdmins().forEach(user -> emails.add(user.getUsername()));
         emails.forEach(email -> sendPaymentEmail(email, amount, PaymentType.REQUEST, null));
+    }
+
+    @Override
+    public void sendGeneralEmail(List<UserDto> allCustomers, GeneralMailRequest mailRequest) {
+        allCustomers.forEach(user -> {
+            Context context = new Context();
+            context.setVariable("email", user.getUsername());
+            context.setVariable("firstName", user.getUserDetails().getFirstName());
+            context.setVariable("theBody", mailRequest.getBody());
+            context.setVariable("mailTitle", mailRequest.getTitle());
+
+            String htmlContent = templateEngine.process("general-email", context);
+            emailService.sendEmail(user.getUsername(), mailRequest.getSubject(), htmlContent);
+        });
     }
 
     private EmailConfirm generateToken(User user, EmailConfirmType type) {

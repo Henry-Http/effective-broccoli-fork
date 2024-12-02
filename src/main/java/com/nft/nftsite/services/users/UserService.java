@@ -60,4 +60,6 @@ public interface UserService {
     List<UserDto> getAllAdmins();
 
     AdminInvitationDto resetAdminPassword(Long adminId);
+
+    GeneralMailResponse sendGeneralMail(GeneralMailRequest mailRequest);
 }
