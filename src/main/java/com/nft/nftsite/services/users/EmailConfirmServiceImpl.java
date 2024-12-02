@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     private final EmailConfirmRepository emailConfirmRepository;
     private final EmailService emailService;
     private final SpringTemplateEngine templateEngine;
+    private final UserService userService;
 
     @Value("${default_password_reset_client_url}")
     private String resetPasswordUrl;
@@ -66,10 +69,9 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         String subject = switch (paymentType) {
             case APPROVAL -> "Payment Approved!";
             case DECLINE -> "Payment Declined!";
-            case REQUEST -> "New Payment Request";
+            case REQUEST, USER_REQUEST -> "New Payment Request";
             case USER_PURCHASE -> "New NFT Item in Collection!";
             case USER_SALE -> "New Sale!";
-            case USER_REQUEST -> "New Payment Request";
         };
 
         String template = switch (paymentType) {
@@ -113,14 +115,9 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
 
     @Override
     public void sendPaymentRequestEmail(String amount) {
-        //TODO: Uncomment this
-//        List<String> emails = List.of(
-//                "patrick.okafor@pallettex.com",
-//                "support@pallettex.com"
-//        );
-//        for (String email : emails) {
-//            sendPaymentEmail(email, amount, PaymentType.REQUEST, null);
-//        }
+        List<String> emails = new ArrayList<>();
+        userService.getAllAdmins().forEach(user -> emails.add(user.getUsername()));
+        emails.forEach(email -> sendPaymentEmail(email, amount, PaymentType.REQUEST, null));
     }
 
     private EmailConfirm generateToken(User user, EmailConfirmType type) {
