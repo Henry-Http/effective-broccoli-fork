@@ -33,7 +33,6 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     private final EmailConfirmRepository emailConfirmRepository;
     private final EmailService emailService;
     private final SpringTemplateEngine templateEngine;
-    private final UserService userService;
 
     @Value("${default_password_reset_client_url}")
     private String resetPasswordUrl;
@@ -119,9 +118,9 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     }
 
     @Override
-    public void sendPaymentRequestEmail(String amount) {
+    public void sendPaymentRequestEmail(List<UserDto> admins, String amount) {
         List<String> emails = new ArrayList<>();
-        userService.getAllAdmins().forEach(user -> emails.add(user.getUsername()));
+        admins.forEach(user -> emails.add(user.getUsername()));
         emails.forEach(email -> sendPaymentEmail(email, amount, PaymentType.REQUEST, null));
     }
 

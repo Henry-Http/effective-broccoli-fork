@@ -25,7 +25,7 @@ public interface EmailConfirmService {
 
     void resendOtp(User user);
 
-    void sendPaymentRequestEmail(String amount);
+    void sendPaymentRequestEmail(List<UserDto> admins, String amount);
 
     void sendGeneralEmail(List<UserDto> allCustomers, GeneralMailRequest mailRequest);
 }
