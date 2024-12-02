@@ -1,9 +1,11 @@
 package com.nft.nftsite.controllers;
 
 
+import com.nft.nftsite.data.dtos.requests.WithdrawalRequest;
 import com.nft.nftsite.data.dtos.requests.payment.CreateDeposit;
 import com.nft.nftsite.data.dtos.requests.payment.PaymentCardDto;
 import com.nft.nftsite.data.dtos.requests.payment.PaymentRequestDto;
+import com.nft.nftsite.data.dtos.responses.WithdrawalDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
 import com.nft.nftsite.services.payment.InternalPaymentService;
@@ -27,8 +29,14 @@ public class PaymentController {
 
     @PostMapping(value = "/deposit")
     @Operation(summary = "Deposit to Wallet", description = "Endpoint to call when user clicks Ive made the payment")
-    public ResponseEntity<DepositResponse> receiveWebhook(@RequestBody CreateDeposit requestDto) {
+    public ResponseEntity<DepositResponse> depositFunds(@RequestBody CreateDeposit requestDto) {
         return new ResponseEntity<>(paymentService.deposit(requestDto), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/withdraw")
+    @Operation(summary = "Withdraw from Wallet", description = "Endpoint to call when user enters amount, network and wallet address")
+    public ResponseEntity<WithdrawalDto> withdrawFunds(@RequestBody WithdrawalRequest requestDto) {
+        return new ResponseEntity<>(paymentService.withdraw(requestDto), HttpStatus.OK);
     }
 
     @GetMapping("/approved")
@@ -36,6 +44,13 @@ public class PaymentController {
     @Operation(summary = "Get all approved payments", description = "Get all payments that have been approved")
     public ResponseEntity<List<PaymentRequestDto>> getAllApprovedPayments() {
         return ResponseEntity.ok(paymentService.getAllApprovedPayments());
+    }
+
+    @GetMapping("/withdrawal-requests")
+    @Secured("ROLE_ADMIN")
+    @Operation(summary = "Get all pending withdrawals", description = "Get all withdrawals awaiting completion")
+    public ResponseEntity<List<WithdrawalDto>> getAllPendingWithdrawals() {
+        return ResponseEntity.ok(paymentService.getAllPendingWithdrawals());
     }
 
     @GetMapping("/pending")
@@ -70,6 +85,13 @@ public class PaymentController {
     @Operation(summary = "Approve payment request")
     public ResponseEntity<DepositResponse> approvePayment(@PathVariable Long paymentId) {
         return new ResponseEntity<>(paymentService.approvePayment(paymentId), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/complete-withdrawal/{withdrawalId}")
+    @Secured("ROLE_ADMIN")
+    @Operation(summary = "Approve payment request")
+    public ResponseEntity<WithdrawalDto> approveWithdrawal(@PathVariable Long withdrawalId) {
+        return new ResponseEntity<>(paymentService.approveWithdrawal(withdrawalId), HttpStatus.OK);
     }
 
     @PostMapping(value = "/decline/{paymentId}")

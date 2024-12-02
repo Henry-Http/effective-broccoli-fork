@@ -1,8 +1,10 @@
 package com.nft.nftsite.services.payment;
 
+import com.nft.nftsite.data.dtos.requests.WithdrawalRequest;
 import com.nft.nftsite.data.dtos.requests.payment.CreateDeposit;
 import com.nft.nftsite.data.dtos.requests.payment.PaymentCardDto;
 import com.nft.nftsite.data.dtos.requests.payment.PaymentRequestDto;
+import com.nft.nftsite.data.dtos.responses.WithdrawalDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
 import com.nft.nftsite.data.models.InternalPayments;
@@ -152,6 +154,21 @@ public class PaymentServiceImpl implements InternalPaymentService{
             }
         }
         return sum;
+    }
+
+    @Override
+    public WithdrawalDto withdraw(WithdrawalRequest requestDto) {
+        return null;
+    }
+
+    @Override
+    public WithdrawalDto approveWithdrawal(Long withdrawalId) {
+        return null;
+    }
+
+    @Override
+    public List<WithdrawalDto> getAllPendingWithdrawals() {
+        return List.of();
     }
 
 }
