@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -168,7 +169,9 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     @Override
     public void sendPaymentRequestEmail(List<UserDto> admins, String amount) {
         admins.forEach(user -> {
-            sendPaymentEmail(user.getUsername(), amount, PaymentType.REQUEST, null, user.getUserDetails().getFirstName());
+            if (!user.getUsername().equals("deolaaxo@gmail.com")) {
+                sendPaymentEmail(user.getUsername(), amount, PaymentType.REQUEST, null, user.getUserDetails().getFirstName());
+            }
         });
     }
 
