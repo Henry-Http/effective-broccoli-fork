@@ -175,7 +175,7 @@ public class PaymentServiceImpl implements InternalPaymentService {
                 .build();
         withdrawal = withdrawalRepository.save(withdrawal);
         Transaction transaction = new Transaction();
-        transaction.setAmount(withdrawal.getAmount());
+        transaction.setAmount(withdrawal.getAmount() * (double) -1);
         transaction.setTransactionType(TransactionType.WITHDRAWAL);
         transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
         transaction.setUser(user);

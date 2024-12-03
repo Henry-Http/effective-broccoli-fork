@@ -168,7 +168,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
     @Override
     public void sendPaymentRequestEmail(List<UserDto> admins, String amount) {
         admins.forEach(user -> {
-            sendPaymentEmail(user.getUsername(), amount, PaymentType.REQUEST, null, user.getUsername());
+            sendPaymentEmail(user.getUsername(), amount, PaymentType.REQUEST, null, user.getUserDetails().getFirstName());
         });
     }
 
