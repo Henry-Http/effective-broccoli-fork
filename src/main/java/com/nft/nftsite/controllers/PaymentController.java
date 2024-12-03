@@ -89,9 +89,16 @@ public class PaymentController {
 
     @PostMapping(value = "/complete-withdrawal/{withdrawalId}")
     @Secured("ROLE_ADMIN")
-    @Operation(summary = "Approve payment request")
+    @Operation(summary = "Complete withdrawal request")
     public ResponseEntity<WithdrawalDto> approveWithdrawal(@PathVariable Long withdrawalId) {
         return new ResponseEntity<>(paymentService.approveWithdrawal(withdrawalId), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/refund-withdrawal/{withdrawalId}")
+    @Secured("ROLE_ADMIN")
+    @Operation(summary = "Refund withdrawal request")
+    public ResponseEntity<WithdrawalDto> refundWithdrawal(@PathVariable Long withdrawalId) {
+        return new ResponseEntity<>(paymentService.refundWithdrawal(withdrawalId), HttpStatus.OK);
     }
 
     @PostMapping(value = "/decline/{paymentId}")

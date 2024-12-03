@@ -92,12 +92,12 @@
             <img src="https://i.imghippo.com/files/Fq9115fEE.png"
                  class="logo-black" alt="Pallettex"/>
         </div>
-        <h2 style="color: #E82251; margin-bottom: 20px; font-weight: 600; padding-top: 20px">Payment Declined!</h2>
+        <h2 style="color: #E82251; margin-bottom: 20px; font-weight: 600; padding-top: 20px">Payment <span th:text="${paymentWhat}"/>!</h2>
 
         <p>Dear <span th:text="${email}" />,</p>
 
         <p>
-            Unfortunately, your payment of <span th:text="${amount}"/> ETH was declined!
+            Unfortunately, your payment of <span th:text="${amount}"/> ETH was <span th:text="${paymentWhat}"/>!
         </p>
         <p>
             Payment id is <span th:text="${paymentId}"/>

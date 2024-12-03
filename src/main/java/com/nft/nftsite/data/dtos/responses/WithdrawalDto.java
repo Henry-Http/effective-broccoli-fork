@@ -1,5 +1,6 @@
 package com.nft.nftsite.data.dtos.responses;
 
+import com.nft.nftsite.data.models.enumerations.WithdrawalStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,7 @@ public class WithdrawalDto {
     private String network;
 
     private LocalDateTime createdAt;
+
+    private WithdrawalStatus status;
 
 }

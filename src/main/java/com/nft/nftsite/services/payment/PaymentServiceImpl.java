@@ -7,17 +7,17 @@ import com.nft.nftsite.data.dtos.requests.payment.PaymentRequestDto;
 import com.nft.nftsite.data.dtos.responses.WithdrawalDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
-import com.nft.nftsite.data.models.InternalPayments;
-import com.nft.nftsite.data.models.Transaction;
-import com.nft.nftsite.data.models.User;
-import com.nft.nftsite.data.models.UserDetails;
+import com.nft.nftsite.data.models.*;
 import com.nft.nftsite.data.models.enumerations.InternalPaymentStatus;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.data.models.enumerations.TransactionType;
+import com.nft.nftsite.data.models.enumerations.WithdrawalStatus;
 import com.nft.nftsite.data.repository.InternalPaymentRepository;
 import com.nft.nftsite.data.repository.TransactionRepository;
+import com.nft.nftsite.data.repository.WithdrawalRepository;
 import com.nft.nftsite.exceptions.NFTSiteException;
 import com.nft.nftsite.services.users.EmailConfirmService;
+import com.nft.nftsite.services.users.UserDetailsService;
 import com.nft.nftsite.services.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -30,13 +30,15 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class PaymentServiceImpl implements InternalPaymentService{
+public class PaymentServiceImpl implements InternalPaymentService {
 
     private final InternalPaymentRepository paymentRepository;
     private final UserService userService;
     private final ModelMapper modelMapper;
     private final TransactionRepository transactionRepository;
     private final EmailConfirmService emailConfirmService;
+    private final UserDetailsService userDetailsService;
+    private final WithdrawalRepository withdrawalRepository;
 
     @Override
     public DepositResponse deposit(CreateDeposit request) {
@@ -47,7 +49,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         payment.setStatus(InternalPaymentStatus.PENDING);
         payment = paymentRepository.save(payment);
         emailConfirmService.sendPaymentRequestEmail(userService.getAllAdmins(), payment.getAmount() + "---" + payment.getId());
-        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.USER_REQUEST, null);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.USER_REQUEST, null, user.getUserDetails().getFirstName());
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 
@@ -115,7 +117,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         transactionRepository.save(transaction);
         payment.setStatus(InternalPaymentStatus.APPROVED);
         payment = paymentRepository.save(payment);
-        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.APPROVAL, null);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.APPROVAL, null, user.getUserDetails().getFirstName());
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 
@@ -128,7 +130,7 @@ public class PaymentServiceImpl implements InternalPaymentService{
         payment.setStatus(InternalPaymentStatus.DECLINED);
         payment = paymentRepository.save(payment);
         User user = userService.getUserById(payment.getUser().getId());
-        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.DECLINE, null);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), payment.getAmount() + "---" + payment.getId(), PaymentType.DECLINE, null, user.getUserDetails().getFirstName());
         return DepositResponse.builder().amount(payment.getAmount()).status(payment.getStatus()).build();
     }
 
@@ -158,17 +160,97 @@ public class PaymentServiceImpl implements InternalPaymentService{
 
     @Override
     public WithdrawalDto withdraw(WithdrawalRequest requestDto) {
-        return null;
+        User user = userService.getUserById(userService.getAuthenticatedUser().getId());
+        UserDetails userDetails = user.getUserDetails();
+        if (userDetails.getBalance() < requestDto.getAmount()) {
+            throw new NFTSiteException("Insufficient funds", HttpStatus.BAD_REQUEST);
+        }
+        userDetailsService.deductBalance(requestDto.getAmount());
+        Withdrawal withdrawal = Withdrawal.builder()
+                .amount(requestDto.getAmount())
+                .user(user)
+                .walletAddress(requestDto.getWalletAddress())
+                .network(requestDto.getNetwork())
+                .status(WithdrawalStatus.PENDING)
+                .build();
+        withdrawal = withdrawalRepository.save(withdrawal);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(withdrawal.getAmount());
+        transaction.setTransactionType(TransactionType.WITHDRAWAL);
+        transaction.setDebitOrCreditStatus(TransactionType.DEBIT);
+        transaction.setUser(user);
+        transactionRepository.save(transaction);
+        emailConfirmService.sendPaymentRequestEmail(userService.getAllAdmins(), withdrawal.getAmount() + "---" + withdrawal.getId());
+        emailConfirmService.sendPaymentEmail(user.getUsername(), withdrawal.getAmount() + "---" + withdrawal.getId(), PaymentType.USER_REQUEST, null, user.getUserDetails().getFirstName());
+        return WithdrawalDto.builder()
+                .id(withdrawal.getId())
+                .amount(withdrawal.getAmount())
+                .createdAt(withdrawal.getCreatedAt())
+                .walletAddress(withdrawal.getWalletAddress())
+                .network(withdrawal.getNetwork())
+                .status(withdrawal.getStatus())
+                .build();
     }
 
     @Override
     public WithdrawalDto approveWithdrawal(Long withdrawalId) {
-        return null;
+        Withdrawal withdrawal = withdrawalRepository.findById(withdrawalId).orElseThrow(() -> new NFTSiteException("Withdrawal Request not found", HttpStatus.NOT_FOUND));
+        if (withdrawal.getStatus() == WithdrawalStatus.REFUNDED) {
+            throw new NFTSiteException("Withdrawal Request has already been refunded", HttpStatus.BAD_REQUEST);
+        }
+        if (withdrawal.getStatus() == WithdrawalStatus.APPROVED) {
+            throw new NFTSiteException("Withdrawal Request has already been approved", HttpStatus.BAD_REQUEST);
+        }
+        User user = withdrawal.getUser();
+        withdrawal.setStatus(WithdrawalStatus.APPROVED);
+        withdrawal = withdrawalRepository.save(withdrawal);
+        emailConfirmService.sendPaymentEmail(user.getUsername(), withdrawal.getAmount() + "---" + withdrawal.getId(), PaymentType.APPROVAL, null, user.getUserDetails().getFirstName());
+        return WithdrawalDto.builder()
+                .id(withdrawal.getId())
+                .amount(withdrawal.getAmount())
+                .createdAt(withdrawal.getCreatedAt())
+                .walletAddress(withdrawal.getWalletAddress())
+                .network(withdrawal.getNetwork())
+                .status(withdrawal.getStatus())
+                .build();
+    }
+
+    @Override
+    public WithdrawalDto refundWithdrawal(Long withdrawalId) {
+        Withdrawal withdrawal = withdrawalRepository.findById(withdrawalId).orElseThrow(() -> new NFTSiteException("Withdrawal Request not found", HttpStatus.NOT_FOUND));
+        if (withdrawal.getStatus() == WithdrawalStatus.APPROVED) {
+            throw new NFTSiteException("Withdrawal Request has already been approved", HttpStatus.BAD_REQUEST);
+        }
+        if (withdrawal.getStatus() == WithdrawalStatus.REFUNDED) {
+            throw new NFTSiteException("Withdrawal Request has already been refunded", HttpStatus.BAD_REQUEST);
+        }
+        withdrawal.setStatus(WithdrawalStatus.REFUNDED);
+        withdrawal = withdrawalRepository.save(withdrawal);
+        User user = userService.getUserById(withdrawal.getUser().getId());
+        Transaction transaction = new Transaction();
+        transaction.setAmount(withdrawal.getAmount());
+        transaction.setTransactionType(TransactionType.REFUND);
+        transaction.setDebitOrCreditStatus(TransactionType.CREDIT);
+        transaction.setUser(user);
+        transactionRepository.save(transaction);
+        userDetailsService.creditBalance(withdrawal.getUser().getId(), withdrawal.getAmount());
+        emailConfirmService.sendPaymentEmail(user.getUsername(), withdrawal.getAmount() + "---" + withdrawal.getId(), PaymentType.REFUND, null, user.getUserDetails().getFirstName());
+        return WithdrawalDto.builder()
+                .id(withdrawal.getId())
+                .amount(withdrawal.getAmount())
+                .createdAt(withdrawal.getCreatedAt())
+                .walletAddress(withdrawal.getWalletAddress())
+                .network(withdrawal.getNetwork())
+                .status(withdrawal.getStatus())
+                .build();
     }
 
     @Override
     public List<WithdrawalDto> getAllPendingWithdrawals() {
-        return List.of();
+        List<Withdrawal> pendingWithdrawals = withdrawalRepository.findAllByStatus(WithdrawalStatus.PENDING);
+        Type listType = new TypeToken<List<WithdrawalDto>>() {
+        }.getType();
+        return modelMapper.map(pendingWithdrawals, listType);
     }
 
 }

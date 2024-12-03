@@ -17,7 +17,9 @@ public interface EmailConfirmService {
 
     void sendAdminInvite(User user, String inviterName);
 
-    void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails);
+//    void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails);
+
+    void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails, String firstName);
 
     EmailConfirm retrieveByToken(String token);
 

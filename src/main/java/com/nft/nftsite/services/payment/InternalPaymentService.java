@@ -7,6 +7,8 @@ import com.nft.nftsite.data.dtos.requests.payment.PaymentRequestDto;
 import com.nft.nftsite.data.dtos.responses.WithdrawalDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 public interface InternalPaymentService {
@@ -31,9 +33,13 @@ public interface InternalPaymentService {
 
     long getPayments();
 
+//    @Transactional
     WithdrawalDto withdraw(WithdrawalRequest requestDto);
 
     WithdrawalDto approveWithdrawal(Long withdrawalId);
+
+    @Transactional
+    WithdrawalDto refundWithdrawal(Long withdrawalId);
 
     List<WithdrawalDto> getAllPendingWithdrawals();
 }

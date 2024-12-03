@@ -57,7 +57,7 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
         emailService.sendEmail(user.getUsername(), "Invite Admin", htmlContent);
     }
 
-    @Override
+//    @Override
     public void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails) {
         Context context = new Context();
         context.setVariable("email", email);
@@ -70,9 +70,16 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
             context.setVariable("paymentId", amount.split("---")[1]);
         }
 
+        if (paymentType == PaymentType.DECLINE) {
+            context.setVariable("paymentWhat", "Declined");
+        }
+        if (paymentType == PaymentType.REFUND) {
+            context.setVariable("paymentWhat", "Refunded");
+        }
+
         String subject = switch (paymentType) {
             case APPROVAL -> "Payment Approved!";
-            case DECLINE -> "Payment Declined!";
+            case DECLINE, REFUND -> "Payment Declined!";
             case REQUEST, USER_REQUEST -> "New Payment Request";
             case USER_PURCHASE -> "New NFT Item in Collection!";
             case USER_SALE -> "New Sale!";
@@ -80,7 +87,48 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
 
         String template = switch (paymentType) {
             case APPROVAL -> "payment-approved";
-            case DECLINE -> "payment-declined";
+            case DECLINE, REFUND -> "payment-declined";
+            case REQUEST -> "payment-request";
+            case USER_PURCHASE -> "new-purchase";
+            case USER_SALE -> "new-sale";
+            case USER_REQUEST -> "payment-pending";
+        };
+
+        String htmlContent = templateEngine.process(template, context);
+        emailService.sendEmail(email, subject, htmlContent);
+    }
+
+    @Override
+    public void sendPaymentEmail(String email, String amount, PaymentType paymentType, PaymentDetails paymentDetails, String firstName) {
+        Context context = new Context();
+        context.setVariable("email", firstName);
+
+        if (paymentDetails != null) {
+            context.setVariable("nftName", paymentDetails.getNftName());
+            context.setVariable("amount", paymentDetails.getAmount());
+        } else {
+            context.setVariable("amount", amount.split("---")[0]);
+            context.setVariable("paymentId", amount.split("---")[1]);
+        }
+
+        if (paymentType == PaymentType.DECLINE) {
+            context.setVariable("paymentWhat", "Declined");
+        }
+        if (paymentType == PaymentType.REFUND) {
+            context.setVariable("paymentWhat", "Refunded");
+        }
+
+        String subject = switch (paymentType) {
+            case APPROVAL -> "Payment Approved!";
+            case DECLINE, REFUND -> "Payment Declined!";
+            case REQUEST, USER_REQUEST -> "New Payment Request";
+            case USER_PURCHASE -> "New NFT Item in Collection!";
+            case USER_SALE -> "New Sale!";
+        };
+
+        String template = switch (paymentType) {
+            case APPROVAL -> "payment-approved";
+            case DECLINE, REFUND -> "payment-declined";
             case REQUEST -> "payment-request";
             case USER_PURCHASE -> "new-purchase";
             case USER_SALE -> "new-sale";
@@ -119,14 +167,13 @@ public class EmailConfirmServiceImpl implements EmailConfirmService {
 
     @Override
     public void sendPaymentRequestEmail(List<UserDto> admins, String amount) {
-        List<String> emails = new ArrayList<>();
-        admins.forEach(user -> emails.add(user.getUsername()));
-        emails.forEach(email -> sendPaymentEmail(email, amount, PaymentType.REQUEST, null));
+        admins.forEach(user -> {
+            sendPaymentEmail(user.getUsername(), amount, PaymentType.REQUEST, null, user.getUsername());
+        });
     }
 
     public void sendGeneralEmail(List<UserDto> allCustomers, GeneralMailRequest mailRequest) {
         List<List<UserDto>> batches = Lists.partition(allCustomers, 50);
-
         batches.forEach(batch -> CompletableFuture.runAsync(() -> processBatch(batch, mailRequest)));
     }
 

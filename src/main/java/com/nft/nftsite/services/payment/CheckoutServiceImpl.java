@@ -134,7 +134,7 @@ public class CheckoutServiceImpl implements CheckoutService{
         userDetailsService.deductBalance(nft.getStartingPrice());
         User formerOwnerUser = userService.getUserByUsername(nft.getOwner().getEmailAddress()).orElseThrow(() -> new UserNotFoundException("User not found"));
         nftService.updateNftOwner(nftId);
-        emailConfirmService.sendPaymentEmail(userDetails.getEmailAddress(), nft.getStartingPrice().toString(), PaymentType.USER_PURCHASE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()));
+        emailConfirmService.sendPaymentEmail(userDetails.getEmailAddress(), nft.getStartingPrice().toString(), PaymentType.USER_PURCHASE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()), userDetails.getFirstName());
         Transaction transaction = new Transaction();
         transaction.setAmount(nft.getStartingPrice() * (double) -1);
         transaction.setTransactionType(TransactionType.PURCHASE);
@@ -144,7 +144,7 @@ public class CheckoutServiceImpl implements CheckoutService{
 
 
         userDetailsService.creditBalance(formerOwnerUser.getUserDetails().getId(), nft.getStartingPrice());
-        emailConfirmService.sendPaymentEmail(formerOwnerUser.getUsername(), nft.getStartingPrice().toString(), PaymentType.USER_SALE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()));
+        emailConfirmService.sendPaymentEmail(formerOwnerUser.getUsername(), nft.getStartingPrice().toString(), PaymentType.USER_SALE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()), formerOwnerUser.getUserDetails().getFirstName());
         Transaction newTransaction = new Transaction();
         newTransaction.setAmount(nft.getStartingPrice());
         newTransaction.setTransactionType(TransactionType.SALE);
