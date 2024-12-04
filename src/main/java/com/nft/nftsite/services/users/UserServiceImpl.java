@@ -353,7 +353,7 @@ public class UserServiceImpl implements UserService {
                 .tag(RandomStringGenerator.generateRandomString(20))
                 .build();
 
-        String password = RandomStringGenerator.generateRandomString(16);
+        String password = RandomStringGenerator.generateRandomString(12);
         User user = User.builder()
                 .username(requestDto.getEmail())
                 .password(passwordEncoder.encode(password))
