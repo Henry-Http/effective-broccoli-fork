@@ -19,6 +19,7 @@ public class LoginRequestDto {
     private String username;
 
     @NotBlank(message = "Password is required")
+    @Pattern(regexp = RegexPattern.PASSWORD, message = "Invalid Password")
     private String password;
 
 }
