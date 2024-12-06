@@ -22,6 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,29 @@ public class UserServiceImpl implements UserService {
     private final AdminInvitationRepository adminInvitationRepository;
     private final RoleService roleService;
 
+
+//    @PostConstruct
+//    void setUpAdmin() {
+//        UserDetails userDetails = UserDetails.builder()
+//                .firstName("Pallettex")
+//                .lastName("Admin")
+//                .emailAddress("adeola@pallettex.com")
+//                .createdAt(LocalDateTime.now())
+//                .tag(RandomStringGenerator.generateRandomString(20))
+//                .build();
+//        String password = "Password@123";
+//        User user = User.builder()
+//                .username("adeola@pallettex.com")
+//                .password(passwordEncoder.encode(password))
+//                .activated(true)
+//                .userDetails(userDetails)
+//                .build();
+//        User savedUser = this.save(user);
+//        List<String> roles = List.of("ROLE_ADMIN");
+//        userRoleService.assignRolesToUser(roles, savedUser);
+//    }
+
+
     @Override
     @Transactional
     public TokenResponseDto signUp(SignupRequestDto requestDto) {
@@ -73,6 +97,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(managedUserDto.getLastName())
                 .createdAt(LocalDateTime.now())
                 .balance(0.0)
+                .verified(false)
                 .build();
 
         User user = User.builder()
@@ -142,13 +167,15 @@ public class UserServiceImpl implements UserService {
                             request.getPassword())
             );
 
-//            if (request.getClient() != null
-//                    && authentication.getAuthorities()
-//                    .stream()
-//                    .map(GrantedAuthority::getAuthority)
-//                    .noneMatch(s -> s.equals(request.getClient().getRole()))) {
-//                throw new UnauthorizedRequestException();
-//            }
+            // Check if the user has the ROLE_ADMIN authority
+            boolean isAdmin = authentication.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(role -> role.equals("ROLE_ADMIN"));
+
+            if (isAdmin) {
+                throw new UnauthorizedRequestException("Admin users are not allowed to log in via this endpoint.");
+            }
 
             String token = jwtGenerator.generateToken(authentication);
             return TokenResponseDto.builder().token("Bearer " + token).build();
@@ -157,10 +184,10 @@ public class UserServiceImpl implements UserService {
                 this.resendOtp(request.getUsername());
                 throw new UnauthorizedRequestException("VERIFICATION_REQUIRED");
             }
-
             throw new InvalidLoginDetailsException();
         }
     }
+
 
     @Override
     public User getAuthenticatedUser() {
@@ -191,7 +218,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username.trim());
+        return userRepository.findByUsernameEqualsIgnoreCase(username.trim());
     }
 
     @Override
@@ -445,6 +472,16 @@ public class UserServiceImpl implements UserService {
         List<UserDto> allCustomers = getAllUsers();
         emailConfirmService.sendGeneralEmail(allCustomers, mailRequest);
         return new GeneralMailResponse();
+    }
+
+    @Override
+    public UserDetailsDto verifyUser(String email) {
+        User user = getUserByUsername(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+        UserDetails userDetails = user.getUserDetails();
+        userDetails.setVerified(true);
+        user.setUserDetails(userDetails);
+        userRepository.save(user);
+        return mapper.map(userDetails, UserDetailsDto.class);
     }
 
 }

@@ -49,6 +49,7 @@ public class NftResponse {
                 .lastName(owner.getUserDetails().getLastName())
                 .displayPicture(ImageDto.fromImage(owner.getUserDetails().getDisplayPicture()))
                 .tag(owner.getUserDetails().getTag())
+                .verified(owner.getUserDetails().isVerified())
                 .build();
     }
 

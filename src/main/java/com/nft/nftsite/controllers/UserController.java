@@ -131,6 +131,13 @@ public class UserController {
         return ResponseEntity.ok(userService.resetAdminPassword(adminId));
     }
 
+    @PostMapping("/admin/verify-user/{email}")
+    @Operation(summary = "Verify a user's account")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<UserDetailsDto> verifyUser(@PathVariable String email) {
+        return ResponseEntity.ok(userService.verifyUser(email));
+    }
+
     @PostMapping("/send-mail")
     @Operation(summary = "Send email to all users")
     @Secured("ROLE_ADMIN")

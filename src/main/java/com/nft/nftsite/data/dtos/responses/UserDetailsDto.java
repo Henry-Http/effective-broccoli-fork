@@ -37,4 +37,6 @@ public class UserDetailsDto {
 
     private Double balance;
 
+    private boolean verified;
+
 }

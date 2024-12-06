@@ -62,4 +62,6 @@ public interface UserService {
     AdminInvitationDto resetAdminPassword(Long adminId);
 
     GeneralMailResponse sendGeneralMail(GeneralMailRequest mailRequest);
+
+    UserDetailsDto verifyUser(String email);
 }

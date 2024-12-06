@@ -39,4 +39,7 @@ public class UserDetails {
 
     private Double balance = 0.0;
 
+    @Column(nullable = true)
+    private boolean verified = false;
+
 }
