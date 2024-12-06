@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
     private final UserRoleService userRoleService;
     private final AdminInvitationRepository adminInvitationRepository;
     private final RoleService roleService;
+    private final ModelMapper modelMapper;
 
 
 //    @PostConstruct
@@ -477,6 +478,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailsDto verifyUser(String email) {
         User user = getUserByUsername(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+        UserDetails userDetails = user.getUserDetails();
+        userDetails.setVerified(true);
+        user.setUserDetails(userDetails);
+        userRepository.save(user);
+        return mapper.map(userDetails, UserDetailsDto.class);
+    }
+
+    @Override
+    public List<UserDto> getVerifiedUsers() {
+        List<User> users = userRepository.findAllByUserDetails_Verified(true);
+        Type pageDtoTypeToken = new TypeToken<List<UserDto>>() {
+        }.getType();
+        return mapper.map(users, pageDtoTypeToken);
+    }
+
+    @Override
+    public UserDetailsDto removeUserVerification(Long userId) {
+        User user = getUserById(userId);
         UserDetails userDetails = user.getUserDetails();
         userDetails.setVerified(true);
         user.setUserDetails(userDetails);

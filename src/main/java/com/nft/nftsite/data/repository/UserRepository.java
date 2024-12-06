@@ -32,4 +32,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     List<User> findAllByRolesContaining(Role role);
 
+    List<User> findAllByUserDetails_Verified(boolean verified);
+
 }

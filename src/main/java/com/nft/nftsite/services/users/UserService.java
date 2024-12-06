@@ -64,4 +64,8 @@ public interface UserService {
     GeneralMailResponse sendGeneralMail(GeneralMailRequest mailRequest);
 
     UserDetailsDto verifyUser(String email);
+
+    List<UserDto> getVerifiedUsers();
+
+    UserDetailsDto removeUserVerification(Long userId);
 }

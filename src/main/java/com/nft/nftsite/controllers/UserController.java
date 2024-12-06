@@ -124,11 +124,25 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllAdmins());
     }
 
+    @GetMapping("/admin/verified-users")
+    @Operation(summary = "Get verified users")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<List<UserDto>> getVerifiedUsers() {
+        return ResponseEntity.ok(userService.getVerifiedUsers());
+    }
+
     @PostMapping("/admin/reset-password/{adminId}")
     @Operation(summary = "Reset admin password")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<AdminInvitationDto> resetAdminPassword(@PathVariable Long adminId) {
         return ResponseEntity.ok(userService.resetAdminPassword(adminId));
+    }
+
+    @PostMapping("/admin/remove-verification/{userId}")
+    @Operation(summary = "Remove a user's verification status")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<UserDetailsDto> removeUserVerification(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.removeUserVerification(userId));
     }
 
     @PostMapping("/admin/verify-user/{email}")
