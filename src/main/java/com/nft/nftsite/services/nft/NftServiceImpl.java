@@ -145,6 +145,7 @@ public class NftServiceImpl implements NftService {
         Category category = Category.builder()
                 .name(categoryRequest.getCategoryName())
                 .description(categoryRequest.getCategoryDescription())
+                .isVisible(false)
                 .build();
         category = categoryRepository.save(category);
         return CategoryResponse.builder()
