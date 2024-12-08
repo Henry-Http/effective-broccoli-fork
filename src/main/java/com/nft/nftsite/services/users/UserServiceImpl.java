@@ -183,7 +183,8 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             if (Objects.equals(e.getClass().getName(), "org.springframework.security.authentication.LockedException")) {
                 this.resendOtp(request.getUsername());
-                throw new UnauthorizedRequestException("VERIFICATION_REQUIRED");
+                String token = jwtGenerator.generateToken(User.builder().username(request.getUsername().trim().toLowerCase()).activated(false).build());
+                throw new UnauthorizedRequestException("VERIFICATION_REQUIRED", Map.of("token", "Bearer " + token));
             }
             throw new InvalidLoginDetailsException();
         }
