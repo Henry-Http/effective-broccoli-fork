@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public TokenResponseDto signUp(SignupRequestDto requestDto) {
-        if (userRepository.existsByUsername(requestDto.getUsername())) {
+        if (userRepository.existsByUsername(requestDto.getUsername().trim().toLowerCase())) {
             throw new UsernameAlreadyUsedException();
         }
 
@@ -164,7 +164,7 @@ public class UserServiceImpl implements UserService {
         try {
             log.info("LoginRequestDto username {}", request.getUsername());
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(),
+                    new UsernamePasswordAuthenticationToken(request.getUsername().trim().toLowerCase(),
                             request.getPassword())
             );
 
@@ -239,7 +239,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void forgotPasswordInit(String emailAddress) {
-        Optional<User> user = this.getUserByUsername(emailAddress);
+        Optional<User> user = this.getUserByUsername(emailAddress.trim().toLowerCase());
         user.ifPresent(value ->
                 emailConfirmService.sendConfirmation(value, EmailConfirmType.PASSWORD_RESET)
         );
@@ -265,7 +265,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void resendOtp(String email) {
-        User user = this.getUserByUsername(email).orElseThrow(UnauthorizedRequestException::new);
+        User user = this.getUserByUsername(email.trim().toLowerCase()).orElseThrow(UnauthorizedRequestException::new);
         emailConfirmService.resendOtp(user);
     }
 
@@ -369,21 +369,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AdminInvitationDto inviteAdmin(AdminInvitationDto requestDto) {
-        Optional<User> existingUser = this.getUserByUsername(requestDto.getEmail());
+        Optional<User> existingUser = this.getUserByUsername(requestDto.getEmail().trim().toLowerCase());
 
         if (existingUser.isPresent()) throw new UsernameAlreadyUsedException();
 
         UserDetails userDetails = UserDetails.builder()
                 .firstName(requestDto.getFirstName())
                 .lastName(requestDto.getLastName())
-                .emailAddress(requestDto.getEmail())
+                .emailAddress(requestDto.getEmail().trim().toLowerCase())
                 .createdAt(LocalDateTime.now())
                 .tag(RandomStringGenerator.generateRandomString(20))
                 .build();
 
         String password = RandomStringGenerator.generateRandomString(12);
         User user = User.builder()
-                .username(requestDto.getEmail())
+                .username(requestDto.getEmail().trim().toLowerCase())
                 .password(passwordEncoder.encode(password))
                 .activated(true)
                 .userDetails(userDetails)
@@ -394,7 +394,7 @@ public class UserServiceImpl implements UserService {
 
         userRoleService.assignRolesToUser(roles, savedUser);
 
-        List<AdminInvitation> allInvites = adminInvitationRepository.findAllByEmail(requestDto.getEmail());
+        List<AdminInvitation> allInvites = adminInvitationRepository.findAllByEmail(requestDto.getEmail().trim().toLowerCase());
         for (AdminInvitation invite : allInvites) {
             if (invite.getStatus() == InvitationStatus.PENDING) {
                 throw new InvitationAlreadySentException();
@@ -407,7 +407,7 @@ public class UserServiceImpl implements UserService {
 
         String token = RandomStringGenerator.generateRandomString(128);
         AdminInvitation newInvitation = AdminInvitation.builder()
-                .email(requestDto.getEmail())
+                .email(requestDto.getEmail().trim().toLowerCase())
                 .roles("ROLE_ADMIN")
                 .status(InvitationStatus.PENDING)
                 .token(token)
@@ -425,10 +425,10 @@ public class UserServiceImpl implements UserService {
         try {
             log.info("AdminLoginRequestDto username is {}", request.getUsername());
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(),
+                    new UsernamePasswordAuthenticationToken(request.getUsername().trim().toLowerCase(),
                             request.getPassword())
             );
-            User foundUser = this.getUserByUsername(request.getUsername()).orElseThrow(() -> new InvalidLoginDetailsException("Invalid details provided"));
+            User foundUser = this.getUserByUsername(request.getUsername().trim().toLowerCase()).orElseThrow(() -> new InvalidLoginDetailsException("Invalid details provided"));
             if (foundUser.getRoles().stream().noneMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
                 throw new InvalidLoginDetailsException("Invalid details provided");
             }
@@ -477,7 +477,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsDto verifyUser(String email) {
-        User user = getUserByUsername(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+        User user = getUserByUsername(email.trim().toLowerCase()).orElseThrow(() -> new UserNotFoundException("User not found"));
         UserDetails userDetails = user.getUserDetails();
         userDetails.setVerified(true);
         user.setUserDetails(userDetails);

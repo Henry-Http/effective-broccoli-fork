@@ -31,7 +31,7 @@ public class ManagedUserDto {
     private ThirdPartySignInType thirdPartySignInType;
 
     public ManagedUserDto(SignupRequestDto requestDto) {
-        String signUpEmail = requestDto.getUsername();
+        String signUpEmail = requestDto.getUsername().trim().toLowerCase();
         this.username = signUpEmail;
         this.email = signUpEmail;
         this.firstName = Character.toUpperCase(signUpEmail.charAt(0)) + signUpEmail.substring(1, signUpEmail.indexOf("@")).toLowerCase();
@@ -39,11 +39,11 @@ public class ManagedUserDto {
     }
 
     public ManagedUserDto(ThirdPartyUserDetails thirdPartyUserDetails, ThirdPartySignInType type) {
-        this.username = thirdPartyUserDetails.getId();
+        this.username = thirdPartyUserDetails.getId().trim();
         this.password = RandomStringUtils.randomAlphanumeric(36, 50);
         this.firstName = thirdPartyUserDetails.getFirstName();
         this.lastName = thirdPartyUserDetails.getLastName();
-        this.email = thirdPartyUserDetails.getEmail();
+        this.email = thirdPartyUserDetails.getEmail().trim();
         this.activated = true;
         this.thirdPartySignIn = true;
         this.thirdPartySignInType = type;
