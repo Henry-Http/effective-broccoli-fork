@@ -18,6 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByUsernameEqualsIgnoreCase(String username);
 
     Optional<User> findByUsernameAndThirdPartySignInType(String username, ThirdPartySignInType thirdPartySignInType);
+    Optional<User> findByUsernameEqualsIgnoreCaseAndThirdPartySignInType(String username, ThirdPartySignInType thirdPartySignInType);
 
     Boolean existsByUsername(String username);
 

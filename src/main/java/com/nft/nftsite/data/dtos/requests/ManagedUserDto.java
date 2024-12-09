@@ -39,11 +39,11 @@ public class ManagedUserDto {
     }
 
     public ManagedUserDto(ThirdPartyUserDetails thirdPartyUserDetails, ThirdPartySignInType type) {
-        this.username = thirdPartyUserDetails.getId().trim();
+        this.username = thirdPartyUserDetails.getEmail().trim().toLowerCase();
         this.password = RandomStringUtils.randomAlphanumeric(36, 50);
         this.firstName = thirdPartyUserDetails.getFirstName();
         this.lastName = thirdPartyUserDetails.getLastName();
-        this.email = thirdPartyUserDetails.getEmail().trim();
+        this.email = thirdPartyUserDetails.getEmail().trim().toLowerCase();
         this.activated = true;
         this.thirdPartySignIn = true;
         this.thirdPartySignInType = type;

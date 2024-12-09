@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
         ThirdPartyUserDetails thirdPartyUserDetails = thirdPartyAuthService.verify(thirdPartySignInDto.getAccessToken());
 
         Optional<User> userOptional = userRepository
-                .findByUsernameAndThirdPartySignInType(thirdPartyUserDetails.getId(), thirdPartySignInDto.getType());
+                .findByUsernameEqualsIgnoreCaseAndThirdPartySignInType(thirdPartyUserDetails.getEmail().trim().toLowerCase(), thirdPartySignInDto.getType());
 
         User user = userOptional.orElseGet(() -> this.createUser(
                 new ManagedUserDto(thirdPartyUserDetails, thirdPartySignInDto.getType())
