@@ -6,6 +6,7 @@ import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.models.Image;
 import com.nft.nftsite.data.models.User;
 import com.nft.nftsite.data.models.UserDetails;
+import com.nft.nftsite.data.models.enumerations.BalanceType;
 import com.nft.nftsite.data.repository.UserDetailsRepository;
 import com.nft.nftsite.exceptions.FileTypeNotAcceptableException;
 import com.nft.nftsite.exceptions.NFTSiteException;
@@ -100,28 +101,45 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public DepositResponse getUserBalance() {
         User authUser = userService.getAuthenticatedUser();
         UserDetails userDetails = authUser.getUserDetails();
-        return DepositResponse.builder()
-                .amount(userDetails.getBalance() == null ? 0.00 : userDetails.getBalance())
-                .status(null)
-                .build();
+        DepositResponse response = new DepositResponse();
+        response.setBalance(userDetails.getBalance() == null ? 0.00 : userDetails.getBalance());
+        response.setTotalEarned(userDetails.getTotalEarned() == null ? 0.00 : userDetails.getTotalEarned());
+        response.setAmount(response.getBalance() + response.getTotalEarned());
+        response.setStatus(null);
+        return response;
     }
 
     @Override
     public void deductBalance(double amount) {
         User authUser = userService.getAuthenticatedUser();
         UserDetails userDetails = authUser.getUserDetails();
-        if (userDetails.getBalance() < amount) {
-            throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
+        if (userDetails.getTotalEarned() < amount) {
+            if (userDetails.getBalance() < amount) {
+                if (userDetails.getBalance() + userDetails.getTotalEarned() < amount) {
+                    throw new NFTSiteException("Insufficient balance", HttpStatus.BAD_REQUEST);
+                } else {
+                    Double remainder = amount - userDetails.getTotalEarned();
+                    userDetails.setBalance(userDetails.getBalance() - remainder);
+                    userDetails.setTotalEarned(0.00);
+                }
+            } else {
+                userDetails.setBalance(userDetails.getBalance() - amount);
+            }
+        } else {
+            userDetails.setTotalEarned(userDetails.getTotalEarned() - amount);
         }
-        userDetails.setBalance(userDetails.getBalance() - amount);
         userDetailsRepository.save(userDetails);
     }
 
     @Override
-    public void creditBalance(Long id, Double startingPrice) {
+    public void creditBalance(Long id, Double startingPrice, BalanceType balanceType) {
         UserDetails userDetails = userDetailsRepository.findById(id)
                 .orElseThrow(() -> new NFTSiteException("User not found", HttpStatus.NOT_FOUND));
-        userDetails.setBalance(userDetails.getBalance() + startingPrice);
+        if (balanceType == BalanceType.MAIN_BALANCE) {
+            userDetails.setBalance(userDetails.getBalance() + startingPrice);
+        } else if (balanceType == BalanceType.PROFIT_BALANCE) {
+            userDetails.setTotalEarned(userDetails.getTotalEarned() + startingPrice);
+        }
         userDetailsRepository.save(userDetails);
     }
 

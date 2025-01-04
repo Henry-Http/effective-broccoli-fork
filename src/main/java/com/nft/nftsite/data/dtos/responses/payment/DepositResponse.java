@@ -17,4 +17,8 @@ public class DepositResponse {
 
     private InternalPaymentStatus status;
 
+    private Double balance;
+
+    private Double totalEarned;
+
 }

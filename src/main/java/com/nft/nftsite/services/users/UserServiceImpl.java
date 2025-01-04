@@ -98,6 +98,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(managedUserDto.getLastName())
                 .createdAt(LocalDateTime.now())
                 .balance(0.0)
+                .totalEarned(0.0)
                 .verified(false)
                 .build();
 

@@ -8,10 +8,7 @@ import com.nft.nftsite.data.dtos.responses.WithdrawalDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.dtos.responses.payment.UserTransaction;
 import com.nft.nftsite.data.models.*;
-import com.nft.nftsite.data.models.enumerations.InternalPaymentStatus;
-import com.nft.nftsite.data.models.enumerations.PaymentType;
-import com.nft.nftsite.data.models.enumerations.TransactionType;
-import com.nft.nftsite.data.models.enumerations.WithdrawalStatus;
+import com.nft.nftsite.data.models.enumerations.*;
 import com.nft.nftsite.data.repository.InternalPaymentRepository;
 import com.nft.nftsite.data.repository.TransactionRepository;
 import com.nft.nftsite.data.repository.WithdrawalRepository;
@@ -233,7 +230,7 @@ public class PaymentServiceImpl implements InternalPaymentService {
         transaction.setDebitOrCreditStatus(TransactionType.CREDIT);
         transaction.setUser(user);
         transactionRepository.save(transaction);
-        userDetailsService.creditBalance(withdrawal.getUser().getId(), withdrawal.getAmount());
+        userDetailsService.creditBalance(withdrawal.getUser().getId(), withdrawal.getAmount(), BalanceType.MAIN_BALANCE);
         emailConfirmService.sendPaymentEmail(user.getUsername(), withdrawal.getAmount() + "---" + withdrawal.getId(), PaymentType.REFUND, null, user.getUserDetails().getFirstName());
         return WithdrawalDto.builder()
                 .id(withdrawal.getId())

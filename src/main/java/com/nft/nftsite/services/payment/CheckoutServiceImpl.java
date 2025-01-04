@@ -10,6 +10,7 @@ import com.nft.nftsite.data.dtos.responses.payment.AdditionalInfoJson;
 import com.nft.nftsite.data.dtos.responses.payment.BeginCheckoutResponse;
 import com.nft.nftsite.data.dtos.responses.payment.WebhookResponse;
 import com.nft.nftsite.data.models.*;
+import com.nft.nftsite.data.models.enumerations.BalanceType;
 import com.nft.nftsite.data.models.enumerations.NftStatus;
 import com.nft.nftsite.data.models.enumerations.PaymentType;
 import com.nft.nftsite.data.models.enumerations.TransactionType;
@@ -143,7 +144,7 @@ public class CheckoutServiceImpl implements CheckoutService{
         transactionRepository.save(transaction);
 
 
-        userDetailsService.creditBalance(formerOwnerUser.getUserDetails().getId(), nft.getStartingPrice());
+        userDetailsService.creditBalance(formerOwnerUser.getUserDetails().getId(), nft.getStartingPrice(), BalanceType.PROFIT_BALANCE);
         emailConfirmService.sendPaymentEmail(formerOwnerUser.getUsername(), nft.getStartingPrice().toString(), PaymentType.USER_SALE, new PaymentDetails(nft.getName(), nft.getStartingPrice().toString()), formerOwnerUser.getUserDetails().getFirstName());
         Transaction newTransaction = new Transaction();
         newTransaction.setAmount(nft.getStartingPrice());

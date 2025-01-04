@@ -4,6 +4,7 @@ import com.nft.nftsite.data.dtos.requests.UpdateUserDetailsDto;
 import com.nft.nftsite.data.dtos.responses.UserDetailsDto;
 import com.nft.nftsite.data.dtos.responses.payment.DepositResponse;
 import com.nft.nftsite.data.models.User;
+import com.nft.nftsite.data.models.enumerations.BalanceType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserDetailsService {
@@ -20,5 +21,5 @@ public interface UserDetailsService {
 
     void deductBalance(double amount);
 
-    void creditBalance(Long id, Double startingPrice);
+    void creditBalance(Long id, Double startingPrice, BalanceType type);
 }

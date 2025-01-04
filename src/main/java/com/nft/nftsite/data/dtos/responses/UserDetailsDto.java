@@ -37,6 +37,8 @@ public class UserDetailsDto {
 
     private Double balance;
 
+    private Double totalEarned = 0.0;
+
     private boolean verified;
 
 }
