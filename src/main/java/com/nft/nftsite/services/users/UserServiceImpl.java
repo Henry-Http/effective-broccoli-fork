@@ -12,6 +12,7 @@ import com.nft.nftsite.services.users.factories.ThirdPartyAuthFactory;
 import com.nft.nftsite.services.users.factories.ThirdPartyAuthService;
 import com.nft.nftsite.utils.PageDto;
 import com.nft.nftsite.utils.RandomStringGenerator;
+import com.nft.nftsite.utils.RegexPattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -78,6 +79,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public TokenResponseDto signUp(SignupRequestDto requestDto) {
+        if (!requestDto.getUsername().matches(RegexPattern.EMAIL) && !requestDto.getUsername().matches(RegexPattern.OTHER_EMAIL)) {
+            throw new UsernameAlreadyUsedException("Invalid Email Address");
+        }
         if (userRepository.existsByUsername(requestDto.getUsername().trim().toLowerCase())) {
             throw new UsernameAlreadyUsedException();
         }

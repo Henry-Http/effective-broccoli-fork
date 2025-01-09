@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SignupRequestDto {
 
-    @Pattern(regexp = RegexPattern.EMAIL, message = "Invalid email address")
+//    @Pattern(regexp = RegexPattern.EMAIL, message = "Invalid email address")
     @NotBlank(message = "Email is required")
     private String username;
 
